@@ -43,6 +43,27 @@ class SpaceShip {
 
     }
 
+class Projectiles{
+    constructor({position, velocity}){
+        this.position = position;
+        this.velocity = velocity;
+        this.radius = 5;
+    }    
+    draw(){
+        c.beginPath();
+        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2,false);
+        c.closePath();
+        c.fillStyle = "white";
+        c.fill();
+    }
+
+    update(){
+        this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+    }
+}
+
 const spaceship = new SpaceShip({
 
     position:{x: canvas.width / 2, y: canvas.height / 2}, 
@@ -86,8 +107,9 @@ class Asteroid {
     }
 }
 
-const Speed = 3;
-const Rotate_Speed = 0.03;
+const Speed = 5;
+const Rotate_Speed = 0.05;
+const Projectile_Speed = 3;
 
 // Animate Asteroids and spaceship
 function animate() {
@@ -95,7 +117,21 @@ function animate() {
     c.fillStyle = "black";
     c.fillRect(0, 0, canvas.width, canvas.height);
 
-        spaceship.update();
+    spaceship.update();
+
+    for(let i = projectiles.length - 1; i >= 0; i--){
+        const projectile = projectiles[i];
+        projectile.update(); 
+        
+        // Remove projectiles that are off screen
+        if (
+            projectile.position.x + projectile.radius < 0 ||
+            projectile.position.x - projectile.radius > canvas.width ||
+            projectile.position.y - projectile.radius > canvas.height ||
+            projectile.position.y + projectile.radius < 0 ) {
+                projectiles.splice(i, 1);
+            }
+    }
 
         if (keys.w.pressed) {
             
@@ -144,6 +180,17 @@ function animate() {
             case "KeyD":
                 keys.d.pressed = true;
                 break;
+            case "Space":
+                projectiles.push(new Projectiles({
+                    position:{
+                        x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
+                        y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
+                    },
+                    velocity:{
+                        x: Math.cos(spaceship.rotation) * Projectile_Speed,
+                        y: Math.sin(spaceship.rotation) * Projectile_Speed,
+                    }
+                }))
         }
     });
 
@@ -163,7 +210,6 @@ function animate() {
 
 const projectiles = [];
 const asteroids = [];
-
 
 animate();
 
