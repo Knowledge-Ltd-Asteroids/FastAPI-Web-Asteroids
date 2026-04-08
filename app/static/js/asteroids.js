@@ -107,9 +107,26 @@ class Asteroid {
     }
 }
 
-const Speed = 5;
-const Rotate_Speed = 0.05;
-const Projectile_Speed = 3;
+function circleCollide(circle1, circle2){
+    const xDist = circle2.position.x - circle1.position.x;
+    const yDist = circle2.position.y - circle1.position.y;
+
+    const distance = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+
+    if(distance <= circle1.radius + circle2.radius){
+        return true;
+    }
+
+    else{
+        return false;
+    }
+
+}
+
+const Spaceship_Speed = 6;
+const Rotate_Speed = 0.08;
+const Projectile_Speed = 10;
+const Friction = 0.90;
 
 // Animate Asteroids and spaceship
 function animate() {
@@ -135,12 +152,12 @@ function animate() {
 
         if (keys.w.pressed) {
             
-            spaceship.velocity.x = Math.cos(spaceship.rotation) * Speed;
-            spaceship.velocity.y = Math.sin(spaceship.rotation) * Speed;
+            spaceship.velocity.x = Math.cos(spaceship.rotation) * Spaceship_Speed;
+            spaceship.velocity.y = Math.sin(spaceship.rotation) * Spaceship_Speed;
         } 
-        else{
-            spaceship.velocity.x = 0;
-            spaceship.velocity.y = 0;
+        else if (!keys.w.pressed) {
+            spaceship.velocity.x *= Friction;
+            spaceship.velocity.y *= Friction;
         }
 
         if(keys.a.pressed){
@@ -165,6 +182,21 @@ function animate() {
             asteroid.position.y - asteroid.radius > canvas.height) {
                 asteroids.splice(i, 1);
             }
+
+        // For projectiles colliding with asteroids
+        for(let j = projectiles.length - 1; j >= 0; j--){
+            const projectile = projectiles[j];
+
+            if(circleCollide(projectile, asteroid)){
+
+                // Remove asteroid and projectile
+                asteroids.splice(i, 1);
+                projectiles.splice(j, 1);
+
+                break;
+            }
+
+        }
     }
 }
 
@@ -251,6 +283,11 @@ window.setInterval(() => {
             vy = 1;
             break;
     }
+
+    const Asteriod_Speed = Math.random() * 2 + 1;
+    vx *= Asteriod_Speed;
+    vy *= Asteriod_Speed;
+
     asteroids.push(new Asteroid({
         position: {
         x: x,
