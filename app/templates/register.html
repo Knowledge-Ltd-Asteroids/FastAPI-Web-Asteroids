@@ -1,103 +1,172 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
 
-{% block external_js %}
-
-{% endblock %}
-
 {% block internal_css %}
 <style>
     body {
-        background-color: #f8f9fa;
-    }
-
-    .login-container {
-        min-height: 100vh;
-    }
-
-    .login-card {
-        border: none;
-        border-radius: 1rem;
+        margin: 0;
         overflow: hidden;
+        background-color: var(--dark);
     }
 
-    .login-image {
-        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    #bg-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .signup-wrapper {
+        min-height: 100vh;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .card {
+        background: rgba(28, 30, 38, 0.85) !important;
+        backdrop-filter: blur(8px);
+        position: relative;
+        transition: box-shadow 0.15s ease-out;
+        z-index: 20;
+    }
+
+    .card.shield-hit {
+        box-shadow: 
+            0 0 30px rgba(225, 177, 0, 0.6),
+            inset 0 0 20px rgba(225, 177, 0, 0.3) !important;
+    }
+    
+    .signup-note {
+        color: var(--slate);
+        font-size: 0.7rem;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+        margin-top: 1rem;
+    }
+    
+    .password-wrapper {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--slate);
+        cursor: pointer;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        padding: 3rem;
+        transition: color 0.2s;
     }
-
-    .form-section {
-        padding: 3rem;
+    
+    .password-toggle:hover {
+        color: var(--gold);
     }
-
-    .btn-primary {
-        border-radius: 0.5rem;
+    
+    .password-toggle .material-symbols-outlined {
+        font-size: 20px;
     }
-
-    .form-control {
-        border-radius: 0.5rem;
+    
+    input[type="password"],
+    input[type="text"] {
+        padding-right: 40px;
     }
 </style>
 {% endblock %}
 
 
 {% block content %}
+<canvas id="bg-canvas"></canvas>
 
-<div class="container login-container d-flex align-items-center justify-content-center">
-    <div class="card shadow-lg login-card col-lg-10">
-        <div class="row g-0">
-            <div class="col-lg-6 d-none d-lg-flex login-image">
-                <div class="text-center">
-                    <h2 class="mt-4 fw-bold">Registration</h2>
-                    <p class="lead">Create an account for the app</p>
-                </div>
-            </div>
-            <div class="col-lg-6 bg-white">
-                <div class="form-section">
-                    <h3 class="fw-bold mb-4">Register</h3>
-
-                    <form id="signUpForm" method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control form-control-md" id="username" name="username"
-                                required="required">
-                        </div>
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Email</label>
-                            <input type="email" class="form-control form-control-md" id="email" name="email"
-                                required="required">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control form-control-md" id="password" name="password"
-                                required>
-                        </div>
-
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                Register
+<div class="signup-wrapper d-flex align-items-center justify-content-center">
+    <div class="col-11 col-sm-8 col-md-6 col-lg-4">
+        <div class="card border-2" style="border-color: var(--gold);">
+            <div class="card-body p-4">
+                <h1 class="card-title text-center mb-4" style="color: var(--gold);">SIGN UP</h1>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <input type="text" 
+                               class="form-control" 
+                               name="username" 
+                               placeholder="USERNAME" 
+                               value="{{ form_data.username if form_data else '' }}"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <input type="email" 
+                               class="form-control" 
+                               name="email" 
+                               placeholder="EMAIL" 
+                               value="{{ form_data.email if form_data else '' }}"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="password-wrapper">
+                            <input type="password" 
+                                   class="form-control" 
+                                   name="password" 
+                                   id="password"
+                                   placeholder="PASSWORD" 
+                                   required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                                <span class="material-symbols-outlined">visibility</span>
                             </button>
                         </div>
-
-                        <div class="d-grid mb-3">
-                            <a class="btn btn-secondary btn-lg" href="{{url_for('login_view')}}" role="button">
-                                Back to Login
-                            </a>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="password-wrapper">
+                            <input type="password" 
+                                   class="form-control" 
+                                   name="confirm_password" 
+                                   id="confirm_password"
+                                   placeholder="CONFIRM PASSWORD" 
+                                   required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
+                                <span class="material-symbols-outlined">visibility</span>
+                            </button>
                         </div>
-                        {% for message in get_flashed_messages(request) %}
-                        <div class="alert alert-{{ message.type }}" role="alert">{{ message.message }}</div>
-                        {% endfor %}
-                    </form>
-
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        CREATE ACCOUNT
+                    </button>
+                </form>
+                
+                <div class="text-center">
+                    <a href="{{ url_for('login_view') }}" class="text-secondary text-decoration-none">
+                        <span class="material-symbols-outlined align-middle" style="font-size: 16px;">arrow_back</span>
+                        BACK TO LOGIN
+                    </a>
                 </div>
+                
+                <p class="signup-note">
+                    <span class="material-symbols-outlined align-middle" style="font-size: 12px;">shield</span>
+                    Join to earn currency • Save progress • Unlock ships
+                </p>
+                
+                {% for message in get_flashed_messages(request) %}
+                <div class="alert alert-danger mt-3" role="alert">
+                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">warning</span>
+                    {{ message.message }}
+                </div>
+                {% endfor %}
             </div>
-
         </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', path='js/utils.js') }}"></script>
+<script src="{{ url_for('static', path='js/login.js') }}"></script>
 {% endblock %}

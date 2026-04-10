@@ -1,0 +1,149 @@
+:root {
+    /* Colours */
+    --slate: #7A8D9D;
+    --gold: #E1B100;
+    --coral: #FF6F61;
+    --dark: #1C1E26;
+    --light: #D6D9D4;
+    
+    /* Font */
+    --font-pixel: 'Press Start 2P', system-ui, monospace;
+    
+    /* Override Bootstrap Variables */
+    --bs-primary: var(--gold);
+    --bs-primary-rgb: 225, 177, 0;
+    --bs-secondary: var(--slate);
+    --bs-secondary-rgb: 122, 141, 157;
+    --bs-danger: var(--coral);
+    --bs-danger-rgb: 255, 111, 97;
+    --bs-dark: var(--dark);
+    --bs-dark-rgb: 28, 30, 38;
+    --bs-light: var(--light);
+    --bs-light-rgb: 214, 217, 212;
+    --bs-body-bg: var(--dark);
+    --bs-body-color: var(--light);
+}
+
+/* Base Body Styles */
+body {
+    background-color: var(--dark) !important;
+    color: var(--light) !important;
+}
+
+/* Override Bootstrap Components with Font */
+h1, h2, h3, h4, h5, h6,
+.btn,
+.navbar-brand,
+.toast-header strong {
+    font-family: var(--font-pixel) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Custom Bootstrap Button Overrides */
+.btn-primary {
+    background: transparent !important;
+    border: 2px solid var(--gold) !important;
+    color: var(--gold) !important;
+}
+
+.btn-primary:hover {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+    color: var(--dark) !important;
+}
+
+.btn-primary:active,
+.btn-primary:focus {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+    color: var(--dark) !important;
+    box-shadow: 0 0 10px rgba(225, 177, 0, 0.4) !important;
+}
+
+.btn-outline-secondary {
+    border-color: var(--slate) !important;
+    color: var(--slate) !important;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--slate) !important;
+    border-color: var(--slate) !important;
+    color: var(--dark) !important;
+}
+
+/* Toast Customization */
+.toast {
+    background: var(--dark) !important;
+    border: 1px solid var(--slate) !important;
+}
+
+.toast-header {
+    background: rgba(122, 141, 157, 0.2) !important;
+    color: var(--light) !important;
+    border-bottom: 1px solid var(--slate) !important;
+}
+
+.toast-body {
+    color: var(--light) !important;
+}
+
+/* Form Controls */
+.form-control {
+    background: transparent !important;
+    border: 1px solid var(--slate) !important;
+    color: var(--light) !important;
+}
+
+.form-control:focus {
+    background: rgba(28, 30, 38, 0.8) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 10px rgba(225, 177, 0, 0.3) !important;
+    color: var(--light) !important;
+}
+
+.form-control::placeholder {
+    color: var(--slate) !important;
+    opacity: 0.7;
+}
+
+/* Card Styles */
+.card {
+    background: transparent !important;
+}
+
+.card-body {
+    background: transparent !important;
+}
+
+/* Alert Styles */
+.alert-danger {
+    background: rgba(255, 111, 97, 0.15) !important;
+    border: 1px solid var(--coral) !important;
+    color: var(--coral) !important;
+}
+
+/* Link Styles */
+a {
+    color: var(--slate) !important;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--light) !important;
+}
+
+.text-secondary {
+    color: var(--slate) !important;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+    color: var(--gold) !important;
+    font-size: 16px !important;
+}
+
+/* Toast Close Button */
+.btn-close {
+    filter: invert(1) !important;
+}

@@ -1,101 +1,199 @@
 {% extends "base.html" %}
 {% block title %}Login{% endblock %}
 
-{% block external_js %}
-
-{% endblock %}
-
-
 {% block internal_css %}
 <style>
     body {
-        background-color: #f8f9fa;
-    }
-
-    .login-container {
-        min-height: 100vh;
-    }
-
-    .login-card {
-        border: none;
-        border-radius: 1rem;
+        margin: 0;
         overflow: hidden;
     }
 
-    .login-image {
-        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    #bg-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .login-wrapper {
+        min-height: 100vh;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .card {
+        background: rgba(28, 30, 38, 0.85) !important;
+        backdrop-filter: blur(8px);
+        position: relative;
+        transition: box-shadow 0.15s ease-out;
+        z-index: 20;
+    }
+
+    .card.shield-hit {
+        box-shadow: 
+            0 0 30px rgba(225, 177, 0, 0.6),
+            inset 0 0 20px rgba(225, 177, 0, 0.3) !important;
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.75rem;
+        margin: 1.5rem 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--slate);
+        opacity: 0.3;
+    }
+    
+    .divider::before {
+        margin-right: 1rem;
+    }
+    
+    .divider::after {
+        margin-left: 1rem;
+    }
+    
+    .guest-btn {
+        width: 100%;
+        background: transparent;
+        border: 2px dashed var(--slate);
+        color: var(--slate);
+        font-family: var(--font-pixel);
+        font-size: 0.875rem;
+        padding: 0.75rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .guest-btn:hover {
+        border-color: var(--light);
+        color: var(--light);
+        border-style: solid;
+    }
+    
+    .guest-note {
+        color: var(--slate);
+        font-size: 0.7rem;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+        margin-top: 1rem;
+    }
+    
+    /* Password input wrapper for toggle button */
+    .password-wrapper {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--slate);
+        cursor: pointer;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        padding: 3rem;
+        transition: color 0.2s;
     }
-
-    .form-section {
-        padding: 3rem;
+    
+    .password-toggle:hover {
+        color: var(--gold);
     }
-
-    .btn-primary {
-        border-radius: 0.5rem;
+    
+    .password-toggle .material-symbols-outlined {
+        font-size: 20px;
     }
-
-    .form-control {
-        border-radius: 0.5rem;
+    
+    /* Add right padding to password input for the eye icon */
+    input[type="password"],
+    input[type="text"] {
+        padding-right: 40px !important;
     }
 </style>
 {% endblock %}
 
-
 {% block content %}
+<canvas id="bg-canvas"></canvas>
 
-<div class="container login-container d-flex align-items-center justify-content-center">
-    <div class="card shadow-lg login-card col-lg-10">
-        <div class="row g-0">
-            <div class="col-lg-6 d-none d-lg-flex login-image">
-                <div class="text-center">
-                    <h2 class="mt-4 fw-bold">Welcome Back</h2>
-                    <p class="lead">Sign in to continue to the app</p>
-                </div>
-            </div>
-            <div class="col-lg-6 bg-white">
-                <div class="form-section">
-                    <h3 class="fw-bold mb-4">Login</h3>
-
-                    <form id="loginForm" method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control form-control-md" id="username" name="username"
-                                required="required">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control form-control-md" id="password" name="password"
-                                required>
-                        </div>
-
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                Sign In
+<div class="login-wrapper d-flex align-items-center justify-content-center">
+    <div class="col-11 col-sm-8 col-md-6 col-lg-4">
+        <div class="card border-2" style="border-color: var(--gold);">
+            <div class="card-body p-4">
+                <h1 class="card-title text-center mb-4" style="color: var(--gold);">LOGIN</h1>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <input type="text" 
+                               class="form-control" 
+                               name="username" 
+                               placeholder="USERNAME" 
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="password-wrapper">
+                            <input type="password" 
+                                   class="form-control" 
+                                   name="password" 
+                                   id="password"
+                                   placeholder="PASSWORD" 
+                                   required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                                <span class="material-symbols-outlined">visibility</span>
                             </button>
-
-                    </form>
-                </div>
-
-                <div class="d-grid mb-3">
-                    <a class="btn btn-secondary btn-lg" href="{{url_for('register_view')}}" role="button">
-                        Sign Up
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        ENTER
+                    </button>
+                </form>
+                
+                <div class="text-center">
+                    <a href="{{ url_for('register_view') }}" class="text-secondary text-decoration-none">
+                        <span class="material-symbols-outlined align-middle" style="font-size: 16px;">person_add</span>
+                        CREATE ACCOUNT
                     </a>
                 </div>
-
-
+                
+                <div class="divider">OR</div>
+                
+                <button type="button" class="guest-btn" onclick="window.location.href='#'">
+                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">rocket_launch</span>
+                    PLAY AS GUEST
+                </button>
+                
+                <p class="guest-note">
+                    Play instantly • No login required<br>
+                </p>
+                
                 {% for message in get_flashed_messages(request) %}
-                <div class="alert alert-{{ message.type }}" role="alert">{{ message.message }}</div>
+                <div class="alert alert-danger mt-3" role="alert">
+                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">warning</span>
+                    {{ message.message }}
+                </div>
                 {% endfor %}
             </div>
         </div>
-
     </div>
 </div>
-</div>
+
+<script src="{{ url_for('static', path='js/utils.js') }}"></script>
+<script src="{{ url_for('static', path='js/login.js') }}"></script>
 {% endblock %}
