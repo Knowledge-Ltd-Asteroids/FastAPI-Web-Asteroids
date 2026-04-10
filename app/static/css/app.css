@@ -1,15 +1,12 @@
 :root {
-    /* Colours */
     --slate: #7A8D9D;
     --gold: #E1B100;
     --coral: #FF6F61;
     --dark: #1C1E26;
     --light: #D6D9D4;
     
-    /* Font */
     --font-pixel: 'Press Start 2P', system-ui, monospace;
     
-    /* Override Bootstrap Variables */
     --bs-primary: var(--gold);
     --bs-primary-rgb: 225, 177, 0;
     --bs-secondary: var(--slate);
@@ -24,13 +21,11 @@
     --bs-body-color: var(--light);
 }
 
-/* Base Body Styles */
 body {
     background-color: var(--dark) !important;
     color: var(--light) !important;
 }
 
-/* Override Bootstrap Components with Font */
 h1, h2, h3, h4, h5, h6,
 .btn,
 .navbar-brand,
@@ -40,7 +35,6 @@ h1, h2, h3, h4, h5, h6,
     letter-spacing: 1px;
 }
 
-/* Custom Bootstrap Button Overrides */
 .btn-primary {
     background: transparent !important;
     border: 2px solid var(--gold) !important;
@@ -72,7 +66,6 @@ h1, h2, h3, h4, h5, h6,
     color: var(--dark) !important;
 }
 
-/* Toast Customization */
 .toast {
     background: var(--dark) !important;
     border: 1px solid var(--slate) !important;
@@ -88,7 +81,6 @@ h1, h2, h3, h4, h5, h6,
     color: var(--light) !important;
 }
 
-/* Form Controls */
 .form-control {
     background: transparent !important;
     border: 1px solid var(--slate) !important;
@@ -107,7 +99,6 @@ h1, h2, h3, h4, h5, h6,
     opacity: 0.7;
 }
 
-/* Card Styles */
 .card {
     background: transparent !important;
 }
@@ -116,14 +107,12 @@ h1, h2, h3, h4, h5, h6,
     background: transparent !important;
 }
 
-/* Alert Styles */
 .alert-danger {
     background: rgba(255, 111, 97, 0.15) !important;
     border: 1px solid var(--coral) !important;
     color: var(--coral) !important;
 }
 
-/* Link Styles */
 a {
     color: var(--slate) !important;
     transition: color 0.2s;
@@ -143,7 +132,6 @@ a:hover {
     font-size: 16px !important;
 }
 
-/* Toast Close Button */
 .btn-close {
     filter: invert(1) !important;
 }
