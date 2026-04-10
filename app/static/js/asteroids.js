@@ -40,8 +40,28 @@ class SpaceShip {
         this.position.y += this.velocity.y;
 
         }
+    
+    // Get the vertices of ship at any rotation and store them in an array
+    getVertices(){
+        const cos = Math.cos(this.rotation);
+        const sin = Math.sin(this.rotation);
 
+        return[
+            {
+                x: this.position.x + cos * 30 - sin * 0,
+                y: this.position.y + sin * 30 + cos * 0,
+            },
+            {
+                x: this.position.x + cos * -10 - sin * 10,
+                y: this.position.y + sin * -10 + cos * 10,
+            },
+            {
+                x: this.position.x + cos * -10 - sin * -10,
+                y: this.position.y + sin * -10 + cos * -10,
+            },
+        ]
     }
+}
 
 class Projectiles{
     constructor({position, velocity}){
@@ -123,6 +143,51 @@ function circleCollide(circle1, circle2){
 
 }
 
+// Checks collision between a circle (asteroid) and a triangle (spaceship)
+function circleTriangleCollision(circle, triangle){
+
+    for(let i = 0; i < 3; i++){
+        let begin = triangle[i];
+        let end = triangle[(i + 1) % 3];
+
+        let dx = end.x - begin.x;
+        let dy = end.y - begin.y;
+        let length = Math.sqrt(dx * dx + dy * dy);
+
+        let t = ((circle.position.x - begin.x) * dx + (circle.position.y - begin.y) * dy) / (length * length);
+
+        let closestX = begin.x + t * dx;
+        let closestY = begin.y + t * dy;
+
+        if(!isPointOnLineSegment(closestX, closestY, begin, end)){
+            closestX = closestX < begin.x ? begin.x : end.x;
+            closestY = closestY < begin.y ? begin.y : end.y;
+        }
+
+        // Calculate distance from circle center to closest point
+        dx = closestX - circle.position.x;
+        dy = closestY - circle.position.y;
+
+        let distance = Math.sqrt(dx * dx + dy * dy);
+
+        // If distance is less than or equal to radius collision happens
+        if(distance <= circle.radius){
+            return true;    
+        }      
+    }
+}
+
+// Checks if a point (x, y) lies within a given line segment
+function isPointOnLineSegment(x,y, begin, end){
+
+    return(
+        x >= Math.min(begin.x, end.x) &&
+        x <= Math.max(begin.x, end.x) &&
+        y >= Math.min(begin.y, end.y) &&    
+        y <= Math.max(begin.y, end.y)
+    )
+}
+
 const Spaceship_Speed = 6;
 const Rotate_Speed = 0.08;
 const Projectile_Speed = 10;
@@ -130,7 +195,7 @@ const Friction = 0.90;
 
 // Animate Asteroids and spaceship
 function animate() {
-    window.requestAnimationFrame(animate);
+    const animationID = window.requestAnimationFrame(animate);
     c.fillStyle = "black";
     c.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -173,6 +238,12 @@ function animate() {
 
         const asteroid = asteroids[i];
         asteroid.update();
+
+        if(circleTriangleCollision(asteroid, spaceship.getVertices())){
+            console.log("Game Over");
+            window.cancelAnimationFrame(animationID);
+            clearInterval(intervalID);
+        }
 
     // Remove asteroids that are off screen
         if (
@@ -245,7 +316,7 @@ const asteroids = [];
 
 animate();
 
-window.setInterval(() => {
+const intervalID = window.setInterval(() => {
 
     const index = Math.floor(Math.random() * 4);
 
