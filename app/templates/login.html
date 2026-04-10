@@ -91,7 +91,6 @@
         margin-top: 1rem;
     }
     
-    /* Password input wrapper for toggle button */
     .password-wrapper {
         position: relative;
     }
@@ -120,7 +119,6 @@
         font-size: 20px;
     }
     
-    /* Add right padding to password input for the eye icon */
     input[type="password"],
     input[type="text"] {
         padding-right: 40px !important;
@@ -139,21 +137,12 @@
                 
                 <form method="POST">
                     <div class="mb-3">
-                        <input type="text" 
-                               class="form-control" 
-                               name="username" 
-                               placeholder="USERNAME" 
-                               required>
+                        <input type="text" class="form-control" name="username" placeholder="USERNAME" required>
                     </div>
                     
                     <div class="mb-3">
                         <div class="password-wrapper">
-                            <input type="password" 
-                                   class="form-control" 
-                                   name="password" 
-                                   id="password"
-                                   placeholder="PASSWORD" 
-                                   required>
+                            <input type="password" class="form-control" name="password" id="password" placeholder="PASSWORD" required>
                             <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
                                 <span class="material-symbols-outlined">visibility</span>
                             </button>

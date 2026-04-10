@@ -2,10 +2,6 @@
     const canvas = document.getElementById('bg-canvas');
     const c = canvas.getContext('2d');
     
-    // ============================================
-    // SPRITE LOADING
-    // ============================================
-    
     const asteroidSprites = {
         big2: new Image(),
         medium1: new Image(),
@@ -42,10 +38,6 @@
     // Fallback if sprites fail to load
     asteroidSprites.big2.onerror = () => { spritesLoaded = true; };
     
-    // ============================================
-    // CANVAS SETUP
-    // ============================================
-    
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -56,15 +48,12 @@
     c.fillStyle = 'black';
     c.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Mouse tracking
     let mouseX = canvas.width / 2;
     let mouseY = canvas.height / 2;
     let mousePresent = false;
     
-    // Asteroids array
     const asteroids = [];
     
-    // Login box boundaries
     let loginBox = {
         x: 0,
         y: 0,
@@ -91,11 +80,6 @@
         }
     }
     
-    // ============================================
-    // ASTEROID CLASS
-    // ============================================
-    
-    // Sprite types with their sizes
     const spriteTypes = [
         { name: 'big2', size: 60, spriteKey: 'big2' },
         { name: 'medium1', size: 40, spriteKey: 'medium1' },
@@ -199,7 +183,7 @@
                 }
             }
             
-            // Mouse interaction - direct touch only
+            // Mouse repulsion
             if (mousePresent) {
                 const dx = this.position.x - mouseX;
                 const dy = this.position.y - mouseY;
@@ -226,10 +210,6 @@
         }
     }
     
-    // ============================================
-    // STARS
-    // ============================================
-    
     const stars = [];
     for (let i = 0; i < 100; i++) {
         stars.push({
@@ -238,10 +218,6 @@
             size: Math.random() * 2,
         });
     }
-    
-    // ============================================
-    // ANIMATION LOOP
-    // ============================================
     
     function animate() {
         window.requestAnimationFrame(animate);
@@ -274,7 +250,7 @@
             }
         }
         
-        // Draw shield glow
+        // Shield glow from collisisons with login box
         if (boxGlow > 0 && loginBox.active) {
             c.strokeStyle = `rgba(225, 177, 0, ${boxGlow * 0.4})`;
             c.lineWidth = 4;
@@ -288,16 +264,11 @@
         }
     }
     
-    // ============================================
-    // SPAWN ASTEROIDS
-    // ============================================
-    
     function spawnAsteroid() {
         const index = Math.floor(Math.random() * 4);
         let x, y;
         let vx, vy;
         
-        // Random sprite type
         const spriteType = spriteTypes[Math.floor(Math.random() * spriteTypes.length)];
         const radius = spriteType.size / 2;
         
@@ -339,10 +310,6 @@
         }));
     }
     
-    // ============================================
-    // EVENT LISTENERS
-    // ============================================
-    
     window.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
@@ -363,9 +330,6 @@
         updateLoginBoxBounds();
     });
     
-    // ============================================
-    // START
-    // ============================================
     
     animate();
     window.setInterval(spawnAsteroid, 3000);
