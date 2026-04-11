@@ -1,127 +1,283 @@
 {% extends "base.html" %}
 
 {% block internal_css %}
-
 <style>
     body {
-        overflow-x: hidden;
-        background-color: #f8f9fa;
-    }
-
-    #wrapper {
-        display: flex;
-    }
-
-    #sidebar {
-        min-width: 250px;
-        max-width: 250px;
+        background-color: var(--dark) !important;
+        margin: 0;
         min-height: 100vh;
-        transition: all 0.3s;
-        background: #1b263b;
-        color: #fff;
     }
 
-    #sidebar.collapsed {
-        margin-left: -250px;
-    }
-
-    #sidebar .nav-link {
-        color: #adb5bd;
-        font-weight: 500;
-    }
-
-    #sidebar .nav-link:hover,
-    #sidebar .nav-link.active {
-        color: #fff;
-        background-color: #415a77;
-        border-radius: 0.5rem;
-    }
-
-    #content {
-        width: 100%;
-        padding: 1rem;
-        transition: all 0.3s;
+    .app-wrapper {
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
-        background-color: #f8f9fa;
+        position: relative;
+        z-index: 10;
+        padding-bottom: 80px;
     }
 
-    .card {
-        border: none;
-        border-radius: 1rem;
+    .game-header {
+        background: rgba(28, 30, 38, 0.9);
+        border-bottom: 1px solid var(--slate);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 50;
     }
 
-    .summary-card {
-        border-left: 5px solid #0d6efd;
+    .game-logo {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 1.25rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-decoration: none;
     }
 
-    .navbar {
-        border-bottom: 1px solid #dee2e6;
+    .game-logo:hover {
+        color: var(--gold);
+    }
+
+    .header-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .credit-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.875rem;
+    }
+
+    .user-menu {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-greeting {
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+        font-size: 0.875rem;
+    }
+
+    .user-greeting strong {
+        color: var(--gold);
+    }
+
+    .logout-btn {
+        color: var(--slate);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-family: system-ui, sans-serif;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--slate);
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+        color: var(--coral);
+        border-color: var(--coral);
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 1.5rem;
+    }
+
+     .flash-container {
+        padding: 0 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .tab-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(28, 30, 38, 0.95);
+        border-top: 2px solid var(--gold);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0.5rem 0.25rem;
+        z-index: 100;
+        min-height: 70px;
+        height: auto;
+    }
+
+    .tab-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        padding: 0.5rem 0.25rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        flex: 1;
+        max-width: 80px;
+        color: var(--slate);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-item:hover {
+        background: rgba(122, 141, 157, 0.15);
+        color: var(--light);
+    }
+
+    .tab-item.active {
+        color: var(--gold);
+    }
+
+    .tab-item .material-symbols-outlined {
+        font-size: 24px;
+        margin-bottom: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .tab-label {
+        font-family: var(--font-pixel);
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    @media (min-width: 768px) {
+        .tab-bar {
+            max-width: 500px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 12px 12px 0 0;
+            border-left: 1px solid var(--slate);
+            border-right: 1px solid var(--slate);
+        }
+        
+        .app-wrapper {
+            padding-bottom: 90px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .tab-label {
+            display: none;
+        }
+        
+        .tab-item .material-symbols-outlined {
+            font-size: 28px;
+            margin-bottom: 0;
+        }
+        
+        .tab-item {
+            padding: 0.75rem 0;
+        }
+        
+        .tab-bar {
+            min-height: 65px;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .tab-item .material-symbols-outlined {
+            font-size: 24px;
+        }
+        
+        .tab-bar {
+            padding: 0.25rem;
+        }
     }
 </style>
-
 {% block additional_styles %}{% endblock %}
-
 {% endblock %}
 
-
 {% block content %}
-<div id="wrapper">
-
-    <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <h4 class="text-white mb-4 text-center py-4">Project Template</h4>
-
-        <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center {{ 'active' if request.path == '/app' }}" href="/app">
-                    <span class="material-symbols-outlined me-2">people</span>
-                    Users
-                </a>
-            </li>
-            
-            <li class="nav-item mt-auto">
-                <a class="nav-link d-flex align-items-center text-danger" href="/logout">
-                    <span class="material-symbols-outlined me-2">logout</span>
-                    Logout
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    <div id="content">
-        <nav class="navbar navbar-expand-lg bg-white mb-4 px-3 rounded-3 shadow-sm">
-            <button class="btn btn-outline-secondary" id="menu-toggle">
-                <span class="material-symbols-outlined md-dark">menu</span>
-            </button>
-
-            <div class="ms-auto d-flex align-items-center gap-3">
-                <span class="fw-semibold">Welcome, {{user.username}}</span>
-            </div>
-        </nav>
+<div class="app-wrapper">
+    
+    <header class="game-header">
+        <a href="/app" class="game-logo">ASTEROIDS</a>
         
-        <div class="row">
-            <div class="col-12">
-                {% for message in get_flashed_messages(request) %}
-                    <div class="alert alert-{{ message.type }}" role="alert">{{ message.message }}</div>
-                {% endfor %}
+        <div class="header-stats">
+            <div class="credit-display">
+                <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
+                <span>{{ user.profile.currency if user.profile else '1,500' }}</span>
+            </div>
+            <div class="user-menu">
+                <span class="user-greeting">
+                    <strong>{{ user.username | upper if user else 'PLAYER' }}</strong>
+                </span>
+                <a href="/logout" class="logout-btn">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
+                    EXIT
+                </a>
             </div>
         </div>
-
-
-        {% block subpage_content %}{% endblock %}
-
+    </header>
+    
+    <div class="flash-container">
+        {% for message in get_flashed_messages(request) %}
+            {% if message.type == "success" %}
+                <div class="alert alert-success" role="alert">
+                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">check_circle</span>
+                    {{ message.message }}
+                </div>
+            {% else %}
+                <div class="alert alert-danger" role="alert">
+                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">error</span>
+                    {{ message.message }}
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
-
-
+    
+    <!-- Main Content for Templates -->
+    <div class="main-content">
+        {% block subpage_content %}
+        {% endblock %}
+    </div>
+    
+    <!-- Bottom Nav Bar -->
+    <nav class="tab-bar">
+        <a href="#" class="tab-item">
+            <span class="material-symbols-outlined">home</span>
+            <span class="tab-label">HOME</span>
+        </a>
+        
+        <a href="#" class="tab-item">
+            <span class="material-symbols-outlined">shopping_cart</span>
+            <span class="tab-label">STORE</span>
+        </a>
+        
+        <a href="#" class="tab-item">
+            <span class="material-symbols-outlined">rocket_launch</span>
+            <span class="tab-label">HANGAR</span>
+        </a>
+        
+        <a href="#" class="tab-item">
+            <span class="material-symbols-outlined">leaderboard</span>
+            <span class="tab-label">RANKS</span>
+        </a>
+        
+        <a href="#" class="tab-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span class="tab-label">PROFILE</span>
+        </a>
+    </nav>
+    
 </div>
-
-
-<script>
-    document.getElementById("menu-toggle").addEventListener("click", function () {
-        document.getElementById("sidebar").classList.toggle("collapsed");
-    });
-</script>
-
-{% block subpage_scripts %}{% endblock %}
-
 {% endblock %}

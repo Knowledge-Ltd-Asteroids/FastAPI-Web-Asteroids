@@ -4,27 +4,291 @@
 <script src="{{ url_for('static', path='js/app.js')}}"></script>
 {% endblock %}
 
+{% block additional_styles %}
+<style>
+    .dashboard-home {
+        max-width: 800px;
+        margin: 0 auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* Play Actions - At the TOP */
+    .play-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .play-card {
+        background: rgba(28, 30, 38, 0.7);
+        border: 2px solid var(--slate);
+        border-radius: 12px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        backdrop-filter: blur(4px);
+        transition: all 0.2s;
+    }
+
+    .play-card:hover {
+        border-color: var(--gold);
+        box-shadow: 0 0 20px rgba(225, 177, 0, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .play-icon {
+        font-size: 36px;
+        margin-bottom: 0.5rem;
+    }
+
+    .play-title {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 1rem;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .play-description {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.7rem;
+    }
+
+    /* Equipped Ship - Compact */
+    .ship-showcase {
+        background: rgba(28, 30, 38, 0.5);
+        border: 1px solid var(--slate);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .ship-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .ship-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(122, 141, 157, 0.15);
+        border: 1px solid var(--slate);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ship-icon .material-symbols-outlined {
+        font-size: 32px;
+        color: var(--gold);
+    }
+
+    .ship-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ship-label {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .ship-name {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 1.25rem;
+        text-transform: uppercase;
+    }
+
+    .ship-status {
+        color: var(--success);
+        font-family: var(--font-pixel);
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .ship-status .dot {
+        width: 6px;
+        height: 6px;
+        background: var(--success);
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .ship-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .ship-action-btn {
+        background: transparent;
+        border: 1px solid var(--slate);
+        color: var(--slate);
+        padding: 0.4rem 0.75rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-family: system-ui, sans-serif;
+        font-size: 0.65rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .ship-action-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
+
+    .ship-action-btn .material-symbols-outlined {
+        font-size: 16px;
+    }
+
+    /* Quick Stats - Compact Row */
+    .quick-stats {
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-family: var(--font-pixel);
+        color: var(--light);
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+        .ship-showcase {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .ship-info {
+            flex-direction: column;
+        }
+        
+        .play-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .play-icon {
+            font-size: 28px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block subpage_content %}
 
-    <div class="container" id="content">
-        <div class="row">
-            <p>
-                This is table is rendered on the Client. JavaScript code requests the data from <a href="/api/users">/api/users</a> and writes it to this page.
-            </p>
+<div class="dashboard-home">
+    
+    <!-- Play Actions - TOP -->
+    <div class="play-actions">
+        <a href="/app/play/solo" class="play-card">
+            <div class="play-icon">🚀</div>
+            <div class="play-title">SOLO</div>
+            <div class="play-description">Earn credits • Set records</div>
+        </a>
+        
+        <a href="/app/play/coop" class="play-card">
+            <div class="play-icon">👥</div>
+            <div class="play-title">CO-OP</div>
+            <div class="play-description">Team up with another pilot</div>
+        </a>
+    </div>
+    
+    <!-- Equipped Ship - Compact -->
+    <div class="ship-showcase">
+        <div class="ship-info">
+            <div class="ship-icon">
+                <!-- add equipped ship sprite when imported -->
+                <span class="material-symbols-outlined">rocket_launch</span> 
+            </div>
+            <div class="ship-details">
+                <span class="ship-label">EQUIPPED SHIP</span>
+                <span class="ship-name">
+                    {% if user.profile and user.profile.ships %}
+                        {% for ship in user.profile.ships %}
+                            {% if ship.equipped %}{{ ship.ship.name | upper }}{% endif %}
+                        {% endfor %}
+                    {% else %}
+                        FIGHTER
+                    {% endif %}
+                </span>
+                <span class="ship-status">
+                    <span class="dot"></span> READY
+                </span>
+            </div>
         </div>
-        <div class="row">
-            <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Id</th><th>Username</th>
-                  </tr>
-                </thead>
-                <tbody id="result">
-                
-                <tbody>
-            </table>
+        
+        <div class="ship-actions">
+            <a href="/app/hangar" class="ship-action-btn">
+                <span class="material-symbols-outlined">swap_horiz</span>
+                SWITCH
+            </a>
+            <a href="/app/store" class="ship-action-btn">
+                <span class="material-symbols-outlined">add</span>
+                BUY
+            </a>
         </div>
     </div>
+    
+    <!-- Quick Stats - Compact Row -->
+    <div class="quick-stats">
+        <div class="stat-item">
+            <div class="stat-value">{{ user.profile.highest_solo_score if user.profile else '12.5K' }}</div>
+            <div class="stat-label">HIGH SCORE</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-value">{{ user.profile.solo_games_played if user.profile else '42' }}</div>
+            <div class="stat-label">GAMES</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-value">{{ user.profile.asteroids_destroyed if user.profile else '1.8K' }}</div>
+            <div class="stat-label"> ASTEROIDS DESTROYED</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-value">{{ user.profile.currency if user.profile else '1.5K' }}</div>
+            <div class="stat-label">CREDITS</div>
+        </div>
+    </div>
+    
+</div>
 
 {% endblock %}
