@@ -16,6 +16,7 @@ async def register_view(request: Request):
     )
 
 # Action route (performs an action)
+# put specific messages for whether account is registered with email already or username exists
 @router.post('/register', response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
 def signup_user(request:Request, db:SessionDep, 
     username: str = Form(),
@@ -25,7 +26,7 @@ def signup_user(request:Request, db:SessionDep,
     user_repo = UserRepository(db)
     auth_service = AuthService(user_repo)
     try:
-        user = auth_service.register_user(username, email, password)
+        user = auth_service.register_user(username, email, password, db)
         flash(request, "Registration completed! Sign in now!", "success")
         return RedirectResponse(url=request.url_for("login_view"), status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:

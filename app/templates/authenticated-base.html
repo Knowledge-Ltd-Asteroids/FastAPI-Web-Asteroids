@@ -14,26 +14,33 @@
         flex-direction: column;
         position: relative;
         z-index: 10;
-        padding-bottom: 80px;
     }
 
-    .game-header {
-        background: rgba(28, 30, 38, 0.9);
-        border-bottom: 1px solid var(--slate);
-        padding: 1rem 1.5rem;
+    .game-nav {
+        background: rgba(28, 30, 38, 0.95);
+        border-bottom: 2px solid var(--gold);
+        padding: 0.75rem 1.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         backdrop-filter: blur(8px);
         position: sticky;
         top: 0;
-        z-index: 50;
+        z-index: 100;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
     }
 
     .game-logo {
         font-family: var(--font-pixel);
         color: var(--gold);
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         text-transform: uppercase;
         letter-spacing: 2px;
         text-decoration: none;
@@ -43,7 +50,41 @@
         color: var(--gold);
     }
 
-    .header-stats {
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .nav-link {
+        font-family: var(--font-pixel);
+        color: var(--slate);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 0.5rem 0;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .nav-link:hover {
+        color: var(--light);
+    }
+
+    .nav-link.active {
+        color: var(--gold);
+        border-bottom-color: var(--gold);
+    }
+
+    .nav-link .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .nav-right {
         display: flex;
         align-items: center;
         gap: 1.5rem;
@@ -98,108 +139,164 @@
         padding: 1.5rem;
     }
 
-     .flash-container {
-        padding: 0 1.5rem;
-        margin-bottom: 1rem;
+    .flash-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    max-width: 350px;
     }
 
-    .tab-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(28, 30, 38, 0.95);
-        border-top: 2px solid var(--gold);
-        backdrop-filter: blur(8px);
+    .flash-message {
         display: flex;
-        justify-content: space-around;
         align-items: center;
-        padding: 0.5rem 0.25rem;
-        z-index: 100;
-        min-height: 70px;
-        height: auto;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        font-family: system-ui, sans-serif;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.2s ease;
+        border-left: 3px solid;
     }
 
-    .tab-item {
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .flash-close {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        padding: 0.5rem 0.25rem;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        flex: 1;
-        max-width: 80px;
-        color: var(--slate);
-        -webkit-tap-highlight-color: transparent;
     }
 
-    .tab-item:hover {
-        background: rgba(122, 141, 157, 0.15);
-        color: var(--light);
+    .flash-close:hover {
+        opacity: 1;
     }
 
-    .tab-item.active {
+    .flash-close .material-symbols-outlined {
+        font-size: 16px;
+    }
+
+    .flash-message.success {
+        background: var(--dark);
+        border-left-color: var(--success);
+        color: var(--success);
+    }
+
+    .flash-message.danger, .flash-message.error {
+        background: var(--dark);
+        border-left-color: var(--coral);
+        color: var(--coral);
+    }
+
+    .flash-message.warning {
+        background: var(--dark);
+        border-left-color: var(--gold);
         color: var(--gold);
     }
 
-    .tab-item .material-symbols-outlined {
-        font-size: 24px;
-        margin-bottom: 4px;
-        transition: all 0.2s ease;
+    .flash-message.info {
+        background: var(--dark);
+        border-left-color: var(--slate);
+        color: var(--slate);
     }
 
-    .tab-label {
-        font-family: var(--font-pixel);
-        font-size: 0.625rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-align: center;
-        white-space: nowrap;
+    @media (max-width: 480px) {
+        .flash-container {
+            top: 70px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+            align-items: stretch;
+        }
     }
-
-    @media (min-width: 768px) {
-        .tab-bar {
-            max-width: 500px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 12px 12px 0 0;
-            border-left: 1px solid var(--slate);
-            border-right: 1px solid var(--slate);
+    
+    @media (max-width: 900px) {
+        .game-nav {
+            padding: 0.75rem 1rem;
         }
         
-        .app-wrapper {
-            padding-bottom: 90px;
+        .nav-left {
+            gap: 1rem;
+        }
+        
+        .nav-links {
+            gap: 1rem;
+        }
+        
+        .nav-link {
+            font-size: 0.65rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .game-nav {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0.75rem;
+        }
+        
+        .nav-left {
+            justify-content: space-between;
+        }
+        
+        .nav-links {
+            justify-content: space-around;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        
+        .nav-right {
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .nav-link .nav-label {
+            display: none;
+        }
+        
+        .nav-link .material-symbols-outlined {
+            font-size: 24px;
         }
     }
 
     @media (max-width: 480px) {
-        .tab-label {
+        .game-logo {
+            font-size: 1.25rem;
+        }
+        
+        .nav-link .material-symbols-outlined {
+            font-size: 22px;
+        }
+        
+        .credit-display {
+            font-size: 0.75rem;
+        }
+        
+        .user-greeting {
+            font-size: 0.75rem;
+        }
+        
+        .logout-btn span:not(.material-symbols-outlined) {
             display: none;
-        }
-        
-        .tab-item .material-symbols-outlined {
-            font-size: 28px;
-            margin-bottom: 0;
-        }
-        
-        .tab-item {
-            padding: 0.75rem 0;
-        }
-        
-        .tab-bar {
-            min-height: 65px;
-        }
-    }
-
-    @media (max-width: 360px) {
-        .tab-item .material-symbols-outlined {
-            font-size: 24px;
-        }
-        
-        .tab-bar {
-            padding: 0.25rem;
         }
     }
 </style>
@@ -209,75 +306,108 @@
 {% block content %}
 <div class="app-wrapper">
     
-    <header class="game-header">
-        <a href="/app" class="game-logo">ASTEROIDS</a>
+    <!-- Top Nav Bar -->
+    <nav class="game-nav">
+        <div class="nav-left">
+            <a href="/app" class="game-logo">ASTEROIDS</a>
+            
+            <div class="nav-links">
+                <a href="/app" class="nav-link {{ 'active' if request.path == '/app' }}">
+                    <span class="material-symbols-outlined">home</span>
+                    <span class="nav-label">HOME</span>
+                </a>
+                
+                <a href="/store" class="nav-link {{ 'active' if request.path == '/store' }}">
+                    <span class="material-symbols-outlined">shopping_cart</span>
+                    <span class="nav-label">STORE</span>
+                </a>
+                
+                <a href="/hangar" class="nav-link {{ 'active' if request.path == '/hangar' }}">
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                    <span class="nav-label">HANGAR</span>
+                </a>
+                
+                <a href="/leaderboard" class="nav-link {{ 'active' if request.path == '/leaderboard' }}">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                    <span class="nav-label">Leaderboard</span>
+                </a>
+            </div>
+        </div>
         
-        <div class="header-stats">
+        <div class="nav-right">
             <div class="credit-display">
                 <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
                 <span>{{ user.profile.currency if user.profile else '1,500' }}</span>
             </div>
+            
             <div class="user-menu">
-                <span class="user-greeting">
-                    <strong>{{ user.username | upper if user else 'PLAYER' }}</strong>
-                </span>
+                <a href="/profile" class="nav-link {{ 'active' if request.path == '/profile' }}">
+                    <span class="material-symbols-outlined">account_circle</span>
+                    <span class="nav-label">{{ user.username | upper if user else 'PLAYER' }}</span>
+                </a>
+                
                 <a href="/logout" class="logout-btn">
                     <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
-                    EXIT
+                    <span>EXIT</span>
                 </a>
             </div>
         </div>
-    </header>
+    </nav>
     
     <div class="flash-container">
         {% for message in get_flashed_messages(request) %}
-            {% if message.type == "success" %}
-                <div class="alert alert-success" role="alert">
-                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">check_circle</span>
-                    {{ message.message }}
+            <div class="flash-message {{ message.type }}" id="flash-{{ loop.index }}">
+                <div class="flash-content">
+                    {% if message.type == "success" %}
+                        <span class="material-symbols-outlined">check_circle</span>
+                    {% elif message.type in ["danger", "error"] %}
+                        <span class="material-symbols-outlined">error</span>
+                    {% elif message.type == "warning" %}
+                        <span class="material-symbols-outlined">warning</span>
+                    {% else %}
+                        <span class="material-symbols-outlined">info</span>
+                    {% endif %}
+                    <span>{{ message.message }}</span>
                 </div>
-            {% else %}
-                <div class="alert alert-danger" role="alert">
-                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">error</span>
-                    {{ message.message }}
-                </div>
-            {% endif %}
+                <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
         {% endfor %}
     </div>
     
-    <!-- Main Content for Templates -->
     <div class="main-content">
         {% block subpage_content %}
         {% endblock %}
     </div>
     
-    <!-- Bottom Nav Bar -->
-    <nav class="tab-bar">
-        <a href="#" class="tab-item">
-            <span class="material-symbols-outlined">home</span>
-            <span class="tab-label">HOME</span>
-        </a>
-        
-        <a href="#" class="tab-item">
-            <span class="material-symbols-outlined">shopping_cart</span>
-            <span class="tab-label">STORE</span>
-        </a>
-        
-        <a href="#" class="tab-item">
-            <span class="material-symbols-outlined">rocket_launch</span>
-            <span class="tab-label">HANGAR</span>
-        </a>
-        
-        <a href="#" class="tab-item">
-            <span class="material-symbols-outlined">leaderboard</span>
-            <span class="tab-label">RANKS</span>
-        </a>
-        
-        <a href="#" class="tab-item">
-            <span class="material-symbols-outlined">account_circle</span>
-            <span class="tab-label">PROFILE</span>
-        </a>
-    </nav>
-    
 </div>
 {% endblock %}
+
+{% block external_js %}
+
+<script>
+    function closeFlash(id) {
+        const flash = document.getElementById(id);
+        if (flash) {
+            flash.style.opacity = '0';
+            flash.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                flash.remove();
+            }, 200);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashes = document.querySelectorAll('.flash-message');
+        flashes.forEach((flash, index) => {
+            setTimeout(() => {
+                if (flash.parentNode) {
+                    closeFlash(flash.id);
+                }
+            }, 5000 + (index * 500));
+        });
+    });
+</script>
+{% endblock %}
+

@@ -27,7 +27,6 @@ class GameSessionPlayer(SQLModel, table=True):
     # Stats for a single player
     score: int = 0
     asteroids_destroyed: int = 0
-    deaths: int = 0
     currency_earned: int = 0
 
     # This is for co-op only

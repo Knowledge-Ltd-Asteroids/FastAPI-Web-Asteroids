@@ -11,6 +11,7 @@ class PlayerProfile(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
+    total_seconds_played: int = 0
     highest_solo_score: int = 0
     highest_coop_score: int = 0
     solo_games_played: int = 0

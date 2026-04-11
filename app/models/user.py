@@ -9,14 +9,14 @@ if TYPE_CHECKING:
     from .ship import Ship
 
 class UserBase(SQLModel):
-    username: str
-    email: EmailStr
+    username: str = Field(index=True, unique=True)
+    email: EmailStr = Field(index=True, unique=True)
     role: str
 
-class UserCreate(SQLModel):
-    username: str = Field(min_length=5, max_length=128)
-    email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=128)
+# class UserCreate(SQLModel):
+#     username: str = Field(min_length=5, max_length=128)
+#     email: EmailStr = Field(max_length=255)
+#     password: str = Field(min_length=8, max_length=128)
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

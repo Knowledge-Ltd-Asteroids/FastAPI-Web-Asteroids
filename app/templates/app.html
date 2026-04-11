@@ -1,5 +1,7 @@
 {% extends "authenticated-base.html" %}
 
+{% block title %}Home{% endblock %}
+
 {% block external_js %}
 <script src="{{ url_for('static', path='js/app.js')}}"></script>
 {% endblock %}
@@ -16,7 +18,6 @@
         min-height: calc(100vh - 200px);
     }
 
-    /* Play Actions - At the TOP */
     .play-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -60,7 +61,6 @@
         font-size: 0.7rem;
     }
 
-    /* Equipped Ship - Compact */
     .ship-showcase {
         background: rgba(28, 30, 38, 0.5);
         border: 1px solid var(--slate);
@@ -163,7 +163,6 @@
         font-size: 16px;
     }
 
-    /* Quick Stats - Compact Row */
     .quick-stats {
         display: flex;
         justify-content: space-around;
@@ -188,7 +187,6 @@
         letter-spacing: 1px;
     }
 
-    /* Responsive */
     @media (max-width: 500px) {
         .ship-showcase {
             flex-direction: column;
@@ -215,22 +213,22 @@
 
 <div class="dashboard-home">
     
-    <!-- Play Actions - TOP -->
+    <!--SOLO/CO-OP modes -->
     <div class="play-actions">
-        <a href="/app/play/solo" class="play-card">
+        <a href="#" class="play-card">
             <div class="play-icon">🚀</div>
             <div class="play-title">SOLO</div>
-            <div class="play-description">Earn credits • Set records</div>
+            <div class="play-description">Climb the Ranks</div>
         </a>
         
-        <a href="/app/play/coop" class="play-card">
+        <a href="#" class="play-card">
             <div class="play-icon">👥</div>
             <div class="play-title">CO-OP</div>
             <div class="play-description">Team up with another pilot</div>
         </a>
     </div>
     
-    <!-- Equipped Ship - Compact -->
+    <!-- Equipped Ship -->
     <div class="ship-showcase">
         <div class="ship-info">
             <div class="ship-icon">
@@ -255,18 +253,18 @@
         </div>
         
         <div class="ship-actions">
-            <a href="/app/hangar" class="ship-action-btn">
+            <a href="/hangar" class="ship-action-btn">
                 <span class="material-symbols-outlined">swap_horiz</span>
                 SWITCH
             </a>
-            <a href="/app/store" class="ship-action-btn">
+            <a href="/store" class="ship-action-btn">
                 <span class="material-symbols-outlined">add</span>
                 BUY
             </a>
         </div>
     </div>
     
-    <!-- Quick Stats - Compact Row -->
+    <!-- Stats Preview -->
     <div class="quick-stats">
         <div class="stat-item">
             <div class="stat-value">{{ user.profile.highest_solo_score if user.profile else '12.5K' }}</div>
