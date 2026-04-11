@@ -250,6 +250,11 @@ function animate() {
 
     spaceship.update();
 
+    c.fillStyle = "white";
+    c.font = "24px Arial";
+    c.textAlign = "right";
+    c.fillText(`Score: ${score}`, canvas.width - 20, 40);
+
     if (spaceship.position.x > canvas.width) {
         spaceship.position.x = 0;
     }
@@ -302,7 +307,6 @@ function animate() {
         asteroid.update();
 
         if (circleTriangleCollision(asteroid, spaceship.getVertices())) {
-            console.log("Game Over");
             window.cancelAnimationFrame(animationID);
             clearInterval(intervalID);
         }
@@ -316,7 +320,7 @@ function animate() {
             asteroids.splice(i, 1);
         }
 
-        // For projectiles colliding with asteroids
+        // For projectiles colliding with asteroids and splitting them into smaller asteroids
         for (let j = projectiles.length - 1; j >= 0; j--) {
             const projectile = projectiles[j];
 
@@ -350,120 +354,151 @@ function animate() {
                     }));
 
                 }
+                if (asteroid.radius > 40) {
+                    score += 3; // big
+                }
+                else if (asteroid.radius > 20) {
+                    score += 2; // medium
+                }
+                else {
+                    score += 1; // small
+                }
 
                 // Remove asteroid and projectile
                 asteroids.splice(i, 1);
                 projectiles.splice(j, 1);
-
                 break;
-
             }
         }
     }
 }
 
-    // Movement keys
-    window.addEventListener("keydown", (event) => {
-        switch (event.code) {
-            case "KeyW":
-                keys.w.pressed = true;
-                break;
-            case "KeyA":
-                keys.a.pressed = true;
-                break;
-            case "KeyD":
-                keys.d.pressed = true;
-                break;
-            case "Space":
-                projectiles.push(new Projectiles({
-                    position: {
-                        x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
-                        y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
-                    },
-                    velocity: {
-                        x: Math.cos(spaceship.rotation) * Projectile_Speed,
-                        y: Math.sin(spaceship.rotation) * Projectile_Speed,
-                    }
-                }))
+// Movement keys
+window.addEventListener("keydown", (event) => {
+    switch (event.code) {
+        case "KeyW":
+            keys.w.pressed = true;
+            break;
+        case "KeyA":
+            keys.a.pressed = true;
+            break;
+        case "KeyD":
+            keys.d.pressed = true;
+            break;
+        case "Space":
+            projectiles.push(new Projectiles({
+                position: {
+                    x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
+                    y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
+                },
+                velocity: {
+                    x: Math.cos(spaceship.rotation) * Projectile_Speed,
+                    y: Math.sin(spaceship.rotation) * Projectile_Speed,
+                }
+            }))
+    }
+});
+
+window.addEventListener("keyup", (event) => {
+    switch (event.code) {
+        case "KeyW":
+            keys.w.pressed = false;
+            break;
+        case "KeyA":
+            keys.a.pressed = false;
+            break;
+        case "KeyD":
+            keys.d.pressed = false;
+            break;
+    }
+});
+
+const projectiles = [];
+const asteroids = [];
+
+let difficulty = 1;
+let spawnInterval = 3000;
+let intervalID;
+let score = 0;
+
+animate();
+
+const difficultyInterval = window.setInterval(() => {
+    // Increase difficulty and spawn rate every 15 seconds
+    difficulty += 0.5;
+
+    // Decrease spawn interval but not less than 600ms
+    spawnInterval = Math.max(600, spawnInterval - 200);
+
+    clearInterval(intervalID);
+    startSpawingAsteroids();
+
+}, 15000);
+
+function spawnAsteroid() {
+
+    const index = Math.floor(Math.random() * 4);
+
+    let x, y;
+    let vx, vy;
+    let radius = 60 * Math.random() + 30;
+
+    switch (index) {
+
+        case 0: // left
+            x = 0 - radius;
+            y = Math.random() * canvas.height;
+            vx = 1;
+            vy = 0;
+            break;
+
+        case 1: // bottom
+            x = Math.random() * canvas.width;
+            y = canvas.height + radius;
+            vx = 0;
+            vy = -1;
+            break;
+
+        case 2: // right
+            x = canvas.width + radius;
+            y = Math.random() * canvas.height;
+            vx = -1;
+            vy = 0;
+            break;
+
+        case 3: // top
+            x = Math.random() * canvas.width;
+            y = 0 - radius;
+            vx = 0;
+            vy = 1;
+            break;
+    }
+
+    // Increase asteroids speed over time
+    const Asteroid_Speed = (Math.random() * 1 + 0.5) * difficulty;
+    vx *= Asteroid_Speed;
+    vy *= Asteroid_Speed;
+
+    asteroids.push(new Asteroid({
+        position: {
+            x: x,
+            y: y,
+        },
+        velocity: {
+            x: vx,
+            y: vy,
+        },
+        radius,
+    }));
+}
+function startSpawingAsteroids() {
+    intervalID = window.setInterval(() => {
+        const spawnCount = Math.floor(difficulty);
+        for (let i = 0; i < spawnCount; i++) {
+            spawnAsteroid();
         }
-    });
+    }, spawnInterval);
+}
 
-    window.addEventListener("keyup", (event) => {
-        switch (event.code) {
-            case "KeyW":
-                keys.w.pressed = false;
-                break;
-            case "KeyA":
-                keys.a.pressed = false;
-                break;
-            case "KeyD":
-                keys.d.pressed = false;
-                break;
-        }
-    });
-
-    const projectiles = [];
-    const asteroids = [];
-
-    animate();
-
-    const intervalID = window.setInterval(() => {
-
-        const index = Math.floor(Math.random() * 4);
-
-        let x, y;
-        let vx, vy;
-        let radius = 60 * Math.random() + 30;
-
-        switch (index) {
-
-            case 0: // left
-                x = 0 - radius;
-                y = Math.random() * canvas.height;
-                vx = 1;
-                vy = 0;
-                break;
-
-            case 1: // bottom
-                x = Math.random() * canvas.width;
-                y = canvas.height + radius;
-                vx = 0;
-                vy = -1;
-                break;
-
-            case 2: // right
-                x = canvas.width + radius;
-                y = Math.random() * canvas.height;
-                vx = -1;
-                vy = 0;
-                break;
-
-            case 3: // top
-                x = Math.random() * canvas.width;
-                y = 0 - radius;
-                vx = 0;
-                vy = 1;
-                break;
-        }
-
-        const Asteriod_Speed = Math.random() * 2 + 1;
-        vx *= Asteriod_Speed;
-        vy *= Asteriod_Speed;
-
-        asteroids.push(new Asteroid({
-            position: {
-                x: x,
-                y: y,
-            },
-            velocity: {
-
-                x: vx,
-                y: vy,
-
-            },
-            radius,
-        })
-        );
-
-    }, 3000);
+startSpawingAsteroids();
 
