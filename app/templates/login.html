@@ -173,10 +173,17 @@
                 </p>
                 
                 {% for message in get_flashed_messages(request) %}
-                <div class="alert alert-danger mt-3" role="alert">
-                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">warning</span>
-                    {{ message.message }}
-                </div>
+                    {% if message.type == "success" %}
+                        <div class="alert alert-success mt-3" role="alert">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">check_circle</span>
+                            {{ message.message }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger mt-3" role="alert">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">error</span>
+                            {{ message.message }}
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>

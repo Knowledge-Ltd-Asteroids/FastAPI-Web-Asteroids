@@ -17,7 +17,6 @@ class UserCreate(SQLModel):
     username: str = Field(min_length=5, max_length=128)
     email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=128)
-    confirm_password: str
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -27,7 +26,7 @@ class User(UserBase, table=True):
     def check_password(self, plaintext_password:str):
         return PasswordHash.recommended().verify(password=plaintext_password, hash=self.password)
     
-    profile: Optional["PlayerProfile"] = Relationship(back_populates="user", sa_relationship_kwargs={"uselist": False})
+    profile: Optional["PlayerProfile"] = Relationship(back_populates="user")
 
 class UserUpdate(SQLModel):
     username: Optional[str] = Field(default=None, min_length=5, max_length=128)

@@ -4,7 +4,6 @@ from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .player_profile import PlayerProfile
-    from .ship import Ship
 
 class GameSession(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -19,23 +18,22 @@ class GameSession(SQLModel, table=True):
 
     players: list["GameSessionPlayer"] = Relationship(back_populates="session")
 
+
 class GameSessionPlayer(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    session_id: int = Field(foreign_key="game_session.id")
-    player_id: int = Field(foreign_key="player_profile.id")
-    ship_id: int = Field(foreign_key="ship.id")
+    session_id: int = Field(foreign_key="gamesession.id")
+    player_id: int = Field(foreign_key="playerprofile.id")
 
-    #These are specific to a player
+    # Stats for a single player
     score: int = 0
     asteroids_destroyed: int = 0
     deaths: int = 0
     currency_earned: int = 0
-    
-    #for co-op only
+
+    # This is for co-op only
     is_host: bool = False
     is_ready: bool = Field(default=False)
     connected: bool = Field(default=True)
 
-    session: "GameSession" = Relationship(back_populates="players")
-    player: "PlayerProfile" = Relationship(back_populates="game_sessions")
-    ship: "Ship" = Relationship()
+    session: Optional["GameSession"] = Relationship(back_populates="players")
+    player: Optional["PlayerProfile"] = Relationship(back_populates="game_sessions")
