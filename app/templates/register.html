@@ -115,15 +115,6 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <div class="password-wrapper">
-                            <input type="password" class="form-control" name="confirm_password" id="confirm_password" placeholder="CONFIRM PASSWORD" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
-                                <span class="material-symbols-outlined">visibility</span>
-                            </button>
-                        </div>
-                    </div>
-                    
                     <button type="submit" class="btn btn-primary w-100 mb-3">
                         CREATE ACCOUNT
                     </button>
@@ -142,11 +133,18 @@
                 </p>
                 
                 {% for message in get_flashed_messages(request) %}
-                <div class="alert alert-danger mt-3" role="alert">
-                    <span class="material-symbols-outlined align-middle" style="font-size: 16px;">warning</span>
-                    {{ message.message }}
-                </div>
-                {% endfor %}
+                    {% if message.type == "success" %}
+                        <div class="alert alert-success mt-3" role="alert">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">check_circle</span>
+                            {{ message.message }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger mt-3" role="alert">
+                            <span class="material-symbols-outlined align-middle" style="font-size: 16px;">error</span>
+                            {{ message.message }}
+                        </div>
+                    {% endif %}
+            {% endfor %}
             </div>
         </div>
     </div>

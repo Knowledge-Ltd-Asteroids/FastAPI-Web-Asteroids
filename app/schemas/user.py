@@ -13,6 +13,7 @@ class AdminCreate(UserBase):
 
 class RegularUserCreate(UserBase):
     role:str = "regular_user"
+    password: str
 
 class UserResponse(SQLModel):
     id: int
