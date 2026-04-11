@@ -4,6 +4,20 @@ const c = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+const asteroidSprites = {
+    big2: new Image(),
+    medium1: new Image(),
+    medium2: new Image(),
+    small1: new Image(),
+    small2: new Image()
+};
+
+asteroidSprites.big2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_big2.png';
+asteroidSprites.medium1.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_medium1.png';
+asteroidSprites.medium2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_medium2.png';
+asteroidSprites.small1.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_small1.png';
+asteroidSprites.small2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_small2.png';
+
 c.fillStyle = "black";
 c.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -110,22 +124,57 @@ class Asteroid {
         this.position = position;
         this.velocity = velocity;
         this.radius = radius;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.03;
+
+        if (radius > 40) {
+            this.sprite = asteroidSprites.big2;
+        } else if (radius > 20) {
+            if (Math.random() < 0.5) {
+                this.sprite = asteroidSprites.medium1;
+            } else {
+                this.sprite = asteroidSprites.medium2;
+            }
+        } else {
+            if (Math.random() < 0.5) {
+                this.sprite = asteroidSprites.small1;
+            } else {
+                this.sprite = asteroidSprites.small2;
+            }
+        }
+
     }
 
-    draw() {
-        c.beginPath();
-        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2, false);
-        c.closePath();
-        c.strokeStyle = "white";
-        c.stroke();
-    }
+        draw() {
 
-    update() {
-        this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
+            c.save();
+            c.translate(this.position.x, this.position.y);
+            c.rotate(this.rotation);
+
+            const size = this.radius * 2;
+
+            if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
+
+                c.drawImage(this.sprite, -this.radius, -this.radius, size, size);
+            }
+
+            else {
+                c.beginPath();
+                c.arc(0, 0, this.radius, 0, Math.PI * 2, false);
+                c.closePath();
+                c.strokeStyle = "white";
+                c.stroke();
+            }
+            c.restore();
+        }
+
+        update() {
+            this.draw();
+            this.position.x += this.velocity.x;
+            this.position.y += this.velocity.y;
+            this.rotation += this.rotationSpeed;
+        }
     }
-}
 
 function circleCollide(circle1, circle2) {
     const xDist = circle2.position.x - circle1.position.x;
