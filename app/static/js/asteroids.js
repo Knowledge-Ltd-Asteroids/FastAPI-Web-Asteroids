@@ -145,36 +145,36 @@ class Asteroid {
 
     }
 
-        draw() {
+    draw() {
 
-            c.save();
-            c.translate(this.position.x, this.position.y);
-            c.rotate(this.rotation);
+        c.save();
+        c.translate(this.position.x, this.position.y);
+        c.rotate(this.rotation);
 
-            const size = this.radius * 2;
+        const size = this.radius * 2;
 
-            if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
+        if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
 
-                c.drawImage(this.sprite, -this.radius, -this.radius, size, size);
-            }
-
-            else {
-                c.beginPath();
-                c.arc(0, 0, this.radius, 0, Math.PI * 2, false);
-                c.closePath();
-                c.strokeStyle = "white";
-                c.stroke();
-            }
-            c.restore();
+            c.drawImage(this.sprite, -this.radius, -this.radius, size, size);
         }
 
-        update() {
-            this.draw();
-            this.position.x += this.velocity.x;
-            this.position.y += this.velocity.y;
-            this.rotation += this.rotationSpeed;
+        else {
+            c.beginPath();
+            c.arc(0, 0, this.radius, 0, Math.PI * 2, false);
+            c.closePath();
+            c.strokeStyle = "white";
+            c.stroke();
         }
+        c.restore();
     }
+
+    update() {
+        this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+        this.rotation += this.rotationSpeed;
+    }
+}
 
 function circleCollide(circle1, circle2) {
     const xDist = circle2.position.x - circle1.position.x;
@@ -322,119 +322,148 @@ function animate() {
 
             if (circleCollide(projectile, asteroid)) {
 
+                if (asteroid.radius > 30) {
+                    const newRadius = asteroid.radius / 2;
+
+                    asteroids.push(new Asteroid({
+                        position: {
+                            x: asteroid.position.x,
+                            y: asteroid.position.y,
+                        },
+                        velocity: {
+                            x: Math.cos(spaceship.rotation) * 2,
+                            y: Math.sin(spaceship.rotation) * 2,
+                        },
+                        radius: newRadius,
+                    }));
+
+                    asteroids.push(new Asteroid({
+                        position: {
+                            x: asteroid.position.x,
+                            y: asteroid.position.y,
+                        },
+                        velocity: {
+                            x: -Math.cos(spaceship.rotation) * 2,
+                            y: -Math.sin(spaceship.rotation) * 2,
+                        },
+                        radius: newRadius,
+                    }));
+
+                }
+
                 // Remove asteroid and projectile
                 asteroids.splice(i, 1);
                 projectiles.splice(j, 1);
 
                 break;
-            }
 
+            }
         }
     }
 }
 
-// Movement keys
-window.addEventListener("keydown", (event) => {
-    switch (event.code) {
-        case "KeyW":
-            keys.w.pressed = true;
-            break;
-        case "KeyA":
-            keys.a.pressed = true;
-            break;
-        case "KeyD":
-            keys.d.pressed = true;
-            break;
-        case "Space":
-            projectiles.push(new Projectiles({
-                position: {
-                    x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
-                    y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
-                },
-                velocity: {
-                    x: Math.cos(spaceship.rotation) * Projectile_Speed,
-                    y: Math.sin(spaceship.rotation) * Projectile_Speed,
-                }
-            }))
-    }
-});
+    // Movement keys
+    window.addEventListener("keydown", (event) => {
+        switch (event.code) {
+            case "KeyW":
+                keys.w.pressed = true;
+                break;
+            case "KeyA":
+                keys.a.pressed = true;
+                break;
+            case "KeyD":
+                keys.d.pressed = true;
+                break;
+            case "Space":
+                projectiles.push(new Projectiles({
+                    position: {
+                        x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
+                        y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
+                    },
+                    velocity: {
+                        x: Math.cos(spaceship.rotation) * Projectile_Speed,
+                        y: Math.sin(spaceship.rotation) * Projectile_Speed,
+                    }
+                }))
+        }
+    });
 
-window.addEventListener("keyup", (event) => {
-    switch (event.code) {
-        case "KeyW":
-            keys.w.pressed = false;
-            break;
-        case "KeyA":
-            keys.a.pressed = false;
-            break;
-        case "KeyD":
-            keys.d.pressed = false;
-            break;
-    }
-});
+    window.addEventListener("keyup", (event) => {
+        switch (event.code) {
+            case "KeyW":
+                keys.w.pressed = false;
+                break;
+            case "KeyA":
+                keys.a.pressed = false;
+                break;
+            case "KeyD":
+                keys.d.pressed = false;
+                break;
+        }
+    });
 
-const projectiles = [];
-const asteroids = [];
+    const projectiles = [];
+    const asteroids = [];
 
-animate();
+    animate();
 
-const intervalID = window.setInterval(() => {
+    const intervalID = window.setInterval(() => {
 
-    const index = Math.floor(Math.random() * 4);
+        const index = Math.floor(Math.random() * 4);
 
-    let x, y;
-    let vx, vy;
-    let radius = 50 * Math.random() + 10;
+        let x, y;
+        let vx, vy;
+        let radius = 60 * Math.random() + 30;
 
-    switch (index) {
+        switch (index) {
 
-        case 0: // left
-            x = 0 - radius;
-            y = Math.random() * canvas.height;
-            vx = 1;
-            vy = 0;
-            break;
+            case 0: // left
+                x = 0 - radius;
+                y = Math.random() * canvas.height;
+                vx = 1;
+                vy = 0;
+                break;
 
-        case 1: // bottom
-            x = Math.random() * canvas.width;
-            y = canvas.height + radius;
-            vx = 0;
-            vy = -1;
-            break;
+            case 1: // bottom
+                x = Math.random() * canvas.width;
+                y = canvas.height + radius;
+                vx = 0;
+                vy = -1;
+                break;
 
-        case 2: // right
-            x = canvas.width + radius;
-            y = Math.random() * canvas.height;
-            vx = -1;
-            vy = 0;
-            break;
+            case 2: // right
+                x = canvas.width + radius;
+                y = Math.random() * canvas.height;
+                vx = -1;
+                vy = 0;
+                break;
 
-        case 3: // top
-            x = Math.random() * canvas.width;
-            y = 0 - radius;
-            vx = 0;
-            vy = 1;
-            break;
-    }
+            case 3: // top
+                x = Math.random() * canvas.width;
+                y = 0 - radius;
+                vx = 0;
+                vy = 1;
+                break;
+        }
 
-    const Asteriod_Speed = Math.random() * 2 + 1;
-    vx *= Asteriod_Speed;
-    vy *= Asteriod_Speed;
+        const Asteriod_Speed = Math.random() * 2 + 1;
+        vx *= Asteriod_Speed;
+        vy *= Asteriod_Speed;
 
-    asteroids.push(new Asteroid({
-        position: {
-            x: x,
-            y: y,
-        },
-        velocity: {
+        asteroids.push(new Asteroid({
+            position: {
+                x: x,
+                y: y,
+            },
+            velocity: {
 
-            x: vx,
-            y: vy,
+                x: vx,
+                y: vy,
 
-        },
-        radius,
-    })
-    );
+            },
+            radius,
+        })
+        );
 
-}, 3000);
+    }, 3000);
 
