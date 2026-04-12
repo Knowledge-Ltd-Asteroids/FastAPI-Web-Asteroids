@@ -4,8 +4,7 @@ from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .user import User
-    from .ship import PlayerShip
-    from .game_session import GameSessionPlayer
+    from .ship import OwnedShip
 
 class PlayerProfile(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -21,5 +20,5 @@ class PlayerProfile(SQLModel, table=True):
     last_played: Optional[datetime] = None
 
     user: Optional["User"] = Relationship(back_populates="profile")
-    ships: list["PlayerShip"] = Relationship(back_populates="player")
+    ships: list["OwnedShip"] = Relationship(back_populates="player")
     game_sessions: list["GameSessionPlayer"] = Relationship(back_populates="player")

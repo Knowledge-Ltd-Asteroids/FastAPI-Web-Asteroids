@@ -1,4 +1,4 @@
-from .user import User, UserUpdate
+from .user import User, UserCreate, UserUpdate, UserResponse
 from .player_profile import PlayerProfile
-from .ship import Ship, PlayerShip
-from .game_session import GameSession, GameSessionPlayer
+from .ship import CosmeticShip, OwnedShip
+from .lobby import Lobby, LobbyResponse

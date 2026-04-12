@@ -2,9 +2,6 @@ from datetime import datetime, timezone
 from sqlmodel import Field, Relationship, SQLModel
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from .player_profile import PlayerProfile
-
 class GameSession(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     game_mode: str = Field(default="solo")
@@ -24,12 +21,10 @@ class GameSessionPlayer(SQLModel, table=True):
     session_id: int = Field(foreign_key="gamesession.id")
     player_id: int = Field(foreign_key="playerprofile.id")
 
-    # Stats for a single player
     score: int = 0
     asteroids_destroyed: int = 0
     currency_earned: int = 0
 
-    # This is for co-op only
     is_host: bool = False
     is_ready: bool = Field(default=False)
     connected: bool = Field(default=True)

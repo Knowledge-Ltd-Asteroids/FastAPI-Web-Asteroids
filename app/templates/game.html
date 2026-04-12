@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Asteroids{% endblock %}
+
+{% block internal_css %}
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+    }
+
+    #canvas {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<canvas id="canvas"></canvas>
+<script src="{{ url_for('static', path='js/asteroids.js') }}"></script>
+{% endblock %}

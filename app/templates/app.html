@@ -18,6 +18,7 @@
         min-height: calc(100vh - 200px);
     }
 
+
     .play-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -163,6 +164,7 @@
         font-size: 16px;
     }
 
+
     .quick-stats {
         display: flex;
         justify-content: space-around;
@@ -212,8 +214,8 @@
 {% block subpage_content %}
 
 <div class="dashboard-home">
-    
-    <!--SOLO/CO-OP modes -->
+
+
     <div class="play-actions">
         <a href="#" class="play-card">
             <div class="play-icon">🚀</div>
@@ -228,11 +230,10 @@
         </a>
     </div>
     
-    <!-- Equipped Ship -->
     <div class="ship-showcase">
         <div class="ship-info">
             <div class="ship-icon">
-                <!-- add equipped ship sprite when imported -->
+
                 <span class="material-symbols-outlined">rocket_launch</span> 
             </div>
             <div class="ship-details">
@@ -264,7 +265,6 @@
         </div>
     </div>
     
-    <!-- Stats Preview -->
     <div class="quick-stats">
         <div class="stat-item">
             <div class="stat-value">{{ user.profile.highest_solo_score if user.profile else '12.5K' }}</div>

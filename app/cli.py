@@ -19,84 +19,77 @@ def initialize():
         password = encrypt_password("password")
         
         users = [
-            User(username="bob", email="bob@mail.com", password=password, role="regular_user"),
-            User(username="alice", email="alice@mail.com", password=password, role="regular_user"),
-            User(username="admin", email="admin@mail.com", password=password, role="admin"),
+            User(username="bob", email="bob@mail.com", password=password, role="user"),
+            User(username="alice", email="alice@mail.com", password=password, role="user"),
         ]
         for user in users:
             db.add(user)
         db.commit()
         
-        profiles = [
-            PlayerProfile(
-                user_id=1, 
-                display_name="bob",
-                highest_solo_score=12500, 
-                highest_coop_score=21000,
-                solo_games_played=4, 
-                coop_games_played=2,
-                asteroids_destroyed=109, 
-                currency=1500,
-                total_seconds_played=435,
-                last_played=datetime.now(timezone.utc) - timedelta(days=1)
-            ),
-            PlayerProfile(
-                user_id=2, 
-                display_name="alice",
-                highest_solo_score=15000, 
-                highest_coop_score=21000,
-                solo_games_played=3, 
-                coop_games_played=2,
-                asteroids_destroyed=102, 
-                currency=1000,
-                total_seconds_played=415,
-                last_played=datetime.now(timezone.utc) - timedelta(hours=5)
-            ),
-            PlayerProfile(
-                user_id=3, 
-                display_name="admin",
-                highest_solo_score=9999, 
-                highest_coop_score=9999,
-                solo_games_played=999, 
-                coop_games_played=9999,
-                asteroids_destroyed=999, 
-                currency=9999,
-                total_seconds_played=999,
-                last_played=datetime.now(timezone.utc) - timedelta(hours=5)
-            )
+        # Create player profiles with currency
+        player_profiles = [
+            PlayerProfile(user_id=1, currency=2000),
+            PlayerProfile(user_id=2, currency=1500),
         ]
-        for profile in profiles:
+        for profile in player_profiles:
             db.add(profile)
         db.commit()
-
-        ships = [
-            Ship(name="Starter Ship", description="Starter Ship description", 
-                 price=0, sprite="spaceship_thrust.png", is_default=True),
-            Ship(name="Ship2", description="Ship 2 description", 
-                 price=500, sprite="spaceship_thrust.png"),
-            Ship(name="Ship3", description="Ship 3 description", 
-                 price=1000, sprite="spaceship_thrust.png"),
-            Ship(name="Ship4", description="Ship4 description", 
-                 price=2000, sprite="spaceship_thrust.png", is_default=True),
-            Ship(name="Ship5", description="Ship 5 description", 
-                 price=100, sprite="spaceship_thrust.png"),
-            Ship(name="Ship6", description="Ship 6 description", 
-                 price=500, sprite="spaceship_thrust.png"),
-                 
+        
+        cosmetic_ships = [
+            CosmeticShip(
+                name="Classic Arrow",
+                description="The original classic spaceship design",
+                price=0,
+                sprite="classic_arrow.png",
+                is_default=True
+            ),
+            CosmeticShip(
+                name="Plasma Dart",
+                description="A sleek blue spacecraft with plasma energy",
+                price=500,
+                sprite="plasma_dart.png",
+                is_default=False
+            ),
+            CosmeticShip(
+                name="Neon Viper",
+                description="Neon green serpentine ship with sharp angles",
+                price=750,
+                sprite="neon_viper.png",
+                is_default=False
+            ),
+            CosmeticShip(
+                name="Golden Phoenix",
+                description="Majestic gold ship with phoenix-like wings",
+                price=1000,
+                sprite="golden_phoenix.png",
+                is_default=False
+            ),
+            CosmeticShip(
+                name="Obsidian Shadow",
+                description="Dark obsidian ship that seems to absorb light",
+                price=1200,
+                sprite="obsidian_shadow.png",
+                is_default=False
+            ),
         ]
-        for ship in ships:
+
+        for ship in cosmetic_ships:
             db.add(ship)
         db.commit()
         
-        player_ships = [
-            PlayerShip(player_id=1, ship_id=1, equipped=False),
-            PlayerShip(player_id=1, ship_id=2, equipped=True),
-            PlayerShip(player_id=1, ship_id=3, equipped=False),
-            PlayerShip(player_id=2, ship_id=1, equipped=True),
-            PlayerShip(player_id=2, ship_id=2, equipped=False),
+        owned_ships = [
+            # Bob's ships (player_id=1)
+            OwnedShip(player_id=1, cosmetic_ship_id=1),  # Classic Arrow (free)
+            OwnedShip(player_id=1, cosmetic_ship_id=2),  # Plasma Dart
+            OwnedShip(player_id=1, cosmetic_ship_id=3),  # Neon Viper
+
+            # Alice's ships (player_id=2)
+            OwnedShip(player_id=2, cosmetic_ship_id=1),  # Classic Arrow (free)
+            OwnedShip(player_id=2, cosmetic_ship_id=4),  # Golden Phoenix
         ]
-        for ps in player_ships:
-            db.add(ps)
+
+        for owned_ship in owned_ships:
+            db.add(owned_ship)
         db.commit()
         
         #Dummy session data to pass to profile page
