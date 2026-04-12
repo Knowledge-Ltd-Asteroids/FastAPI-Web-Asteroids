@@ -1,5 +1,5 @@
 from app.models.user import UserBase
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 from pydantic import EmailStr
 from typing import Optional
 
@@ -13,7 +13,7 @@ class AdminCreate(UserBase):
 
 class RegularUserCreate(UserBase):
     role:str = "regular_user"
-    password: str
+    password: str = Field(min_length=8, max_length=128)
 
 class UserResponse(SQLModel):
     id: int

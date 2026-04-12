@@ -23,7 +23,6 @@ class GameSessionPlayer(SQLModel, table=True):
 
     score: int = 0
     asteroids_destroyed: int = 0
-    deaths: int = 0
     currency_earned: int = 0
 
     is_host: bool = False

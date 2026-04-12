@@ -5,7 +5,6 @@ from app.dependencies.session import SessionDep
 from app.dependencies.auth import AuthDep, IsUserLoggedIn, get_current_user, is_admin
 from . import router, templates
 
-
 @router.get("/app", response_class=HTMLResponse)
 async def user_home_view(
     request: Request,

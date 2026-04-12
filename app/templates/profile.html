@@ -1,1 +1,422 @@
 {% extends "authenticated-base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .profile-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .profile-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .profile-title {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 1.75rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-subtitle {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.875rem;
+    }
+
+    .currency-card {
+        background: rgba(28, 30, 38, 0.6);
+        border: 1px solid var(--gold);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(4px);
+    }
+
+    .currency-label {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .currency-value {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 2rem;
+    }
+
+    .profile-section {
+        background: rgba(28, 30, 38, 0.6);
+        border: 1px solid var(--slate);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(4px);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--slate);
+    }
+
+    .section-header .material-symbols-outlined {
+        color: var(--gold);
+        font-size: 24px;
+    }
+
+    .section-title {
+        font-family: var(--font-pixel);
+        color: var(--gold);
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .account-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .field-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .field-label {
+        width: 100px;
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .field-value {
+        flex: 1;
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+        font-size: 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .field-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .edit-btn {
+        background: transparent;
+        border: 1px solid var(--slate);
+        color: var(--slate);
+        padding: 0.4rem 1rem;
+        border-radius: 4px;
+        font-family: system-ui, sans-serif;
+        font-size: 0.75rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .edit-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
+
+    .edit-btn .material-symbols-outlined {
+        font-size: 16px;
+    }
+
+    .edit-form {
+        display: none;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+
+    .edit-form.active {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .edit-input {
+        flex: 1;
+        min-width: 200px;
+        background: rgba(28, 30, 38, 0.8);
+        border: 1px solid var(--slate);
+        padding: 0.6rem 1rem;
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+        border-radius: 4px;
+    }
+
+    .edit-input:focus {
+        outline: none;
+        border-color: var(--gold);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .save-btn {
+        background: transparent;
+        border: 1px solid var(--success);
+        color: var(--success);
+        padding: 0.6rem 1rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+    }
+
+    .cancel-btn {
+        background: transparent;
+        border: 1px solid var(--slate);
+        color: var(--slate);
+        padding: 0.6rem 1rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(122, 141, 157, 0.2);
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-value {
+        font-family: var(--font-pixel);
+        color: var(--light);
+        font-size: 1.1rem;
+    }
+
+    .stat-value.highlight {
+        color: var(--gold);
+    }
+
+    @media (max-width: 600px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .field-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .field-label {
+            width: auto;
+        }
+        
+        .field-value {
+            padding: 0;
+        }
+        
+        .currency-card {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+
+<div class="profile-container">
+    
+    <div class="profile-header">
+        <h1 class="profile-title">PILOT PROFILE</h1>
+        <p class="profile-subtitle">{{ user.username | upper }}</p>
+    </div>
+    
+    <div class="currency-card">
+        <span class="currency-label">CREDITS</span>
+        <span class="currency-value">{{ "{:,}".format(profile.currency) }}</span>
+    </div>
+    
+    <div class="profile-section">
+        <div class="section-header">
+            <span class="material-symbols-outlined">settings</span>
+            <h2 class="section-title">ACCOUNT</h2>
+        </div>
+        
+        <div class="account-fields">
+            <div class="field-row">
+                <span class="field-label">USERNAME</span>
+                <span class="field-value" id="username-display">{{ user.username }}</span>
+                <div class="field-actions">
+                    <button class="edit-btn" onclick="toggleEdit('username')">
+                        <span class="material-symbols-outlined">edit</span>
+                        EDIT
+                    </button>
+                </div>
+            </div>
+            
+            <div id="username-edit" class="edit-form">
+                <form method="POST" action="/profile_update_username" style="display: contents;">
+                    <input type="text" name="new_username" class="edit-input" 
+                           value="{{ user.username }}" 
+                           minlength="5" maxlength="128" required>
+                    <div class="form-actions">
+                        <button type="submit" class="save-btn">SAVE</button>
+                        <button type="button" class="cancel-btn" onclick="toggleEdit('username')">CANCEL</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="field-row">
+                <span class="field-label">EMAIL</span>
+                <span class="field-value" id="email-display">{{ user.email }}</span>
+                <div class="field-actions">
+                    <button class="edit-btn" onclick="toggleEdit('email')">
+                        <span class="material-symbols-outlined">edit</span>
+                        EDIT
+                    </button>
+                </div>
+            </div>
+            
+            <div id="email-edit" class="edit-form">
+                <form method="POST" action="/profile_update_email" style="display: contents;">
+                    <input type="email" name="new_email" class="edit-input" 
+                           value="{{ user.email }}" required>
+                    <div class="form-actions">
+                        <button type="submit" class="save-btn">SAVE</button>
+                        <button type="button" class="cancel-btn" onclick="toggleEdit('email')">CANCEL</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="field-row">
+                <span class="field-label">REGISTERED</span>
+                <span class="field-value">{{ user.created_at.strftime('%B %d, %Y') }}</span>
+            </div>
+            
+            <div class="field-row">
+                <span class="field-label">LAST PLAYED</span>
+                <span class="field-value">
+                    {% if profile.last_played %}
+                        {{ profile.last_played.strftime('%B %d, %Y at %I:%M %p') }}
+                    {% else %}
+                        Never
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-section">
+        <div class="section-header">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <h2 class="section-title">STATISTICS</h2>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">TIME PLAYED</span>
+                <span class="stat-value">
+                    {% set hours = profile.total_seconds_played // 3600 %}
+                    {% set minutes = (profile.total_seconds_played % 3600) // 60 %}
+                    {{ hours }}h {{ minutes }}m
+                </span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">TOTAL GAMES</span>
+                <span class="stat-value">{{ profile.solo_games_played + profile.coop_games_played }}</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">SOLO GAMES</span>
+                <span class="stat-value">{{ profile.solo_games_played }}</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">CO-OP GAMES</span>
+                <span class="stat-value">{{ profile.coop_games_played }}</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">ASTEROIDS DESTROYED</span>
+                <span class="stat-value">{{ "{:,}".format(profile.asteroids_destroyed) }}</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">SHIPS OWNED</span>
+                <span class="stat-value">{{ profile.ships | length if profile.ships else 1 }}</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">HIGHEST SOLO</span>
+                <span class="stat-value highlight">{{ "{:,}".format(profile.highest_solo_score) }}</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">HIGHEST CO-OP</span>
+                <span class="stat-value highlight">{{ "{:,}".format(profile.highest_coop_score) }}</span>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    function toggleEdit(field) {
+        const editForm = document.getElementById(`${field}-edit`);
+        
+        if (editForm.classList.contains('active')) {
+            editForm.classList.remove('active');
+        } else {
+            document.querySelectorAll('.edit-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            editForm.classList.add('active');
+        }
+    }
+</script>
+
+{% endblock %}
