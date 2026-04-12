@@ -35,9 +35,9 @@ def admin_home_view(
         #get all counts of ships
         ship_counts = {}
         if profile_ids:
-            ship_results = db.exec(select(PlayerShip.player_id, func.count())
-                            .where(PlayerShip.player_id.in_(profile_ids))
-                            .group_by(PlayerShip.player_id)).all()
+            ship_results = db.exec(select(OwnedShip.player_id, func.count())
+                            .where(OwnedShip.player_id.in_(profile_ids))
+                            .group_by(OwnedShip.player_id)).all()
             ship_counts = {player_id: count for player_id, count in ship_results}
         
         #get all total game sessions

@@ -18,8 +18,8 @@ async def user_hangar_view(
     db:SessionDep
 ):
     #get all ships and IDs of owned ships
-    all_ships = db.exec(select(Ship)).all()
-    owned_ship_ids = [playership.ship_id for playership in user.profile.ships]
+    all_ships = db.exec(select(CosmeticShip)).all()
+    owned_ship_ids = [playership.cosmetic_ship_id for playership in user.profile.ships]
 
     #only get the owned ships
     owned_ships = [ship for ship in all_ships if ship.id in owned_ship_ids]
@@ -28,7 +28,7 @@ async def user_hangar_view(
     equipped_ship_id = None
     for playership in user.profile.ships:
         if playership.equipped:
-            equipped_ship_id = playership.ship_id
+            equipped_ship_id = playership.cosmetic_ship_id
             break
     
     return templates.TemplateResponse(
@@ -49,9 +49,9 @@ def equip_ship(
     ship_id: int = Form()
 ):
     # check for ownership of the selected ship
-    player_ship_selected = db.exec(select(PlayerShip).where
-                                   (PlayerShip.ship_id == ship_id,
-                                    PlayerShip.player_id == user.profile.id)).one_or_none()
+    player_ship_selected = db.exec(select(OwnedShip).where
+                                   (OwnedShip.cosmetic_ship_id == ship_id,
+                                    OwnedShip.player_id == user.profile.id)).one_or_none()
 
     if not player_ship_selected:
         flash(request, "Could not find this ship!", "danger")
@@ -65,5 +65,5 @@ def equip_ship(
     player_ship_selected.equipped = True
     db.commit()
 
-    flash(request, f"{player_ship_selected.ship.name} successfully equipped!", "success")
+    flash(request, f"{player_ship_selected.cosmetic_ship.name} successfully equipped!", "success")
     return RedirectResponse(url=request.url_for("user_hangar_view"), status_code=status.HTTP_303_SEE_OTHER)

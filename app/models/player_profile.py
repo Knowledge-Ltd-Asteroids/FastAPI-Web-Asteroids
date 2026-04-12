@@ -5,6 +5,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from .user import User
     from .ship import OwnedShip
+    from .game_session import GameSessionPlayer
 
 class PlayerProfile(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

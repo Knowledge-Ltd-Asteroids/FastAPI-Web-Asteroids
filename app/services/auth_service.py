@@ -27,7 +27,6 @@ class AuthService:
 
         profile = PlayerProfile(
             user_id=user.id,
-            display_name=username,
             currency=0,
             highest_solo_score=0,
             highest_coop_score=0,
@@ -40,12 +39,12 @@ class AuthService:
         db.commit()
         db.refresh(profile)
         
-        default_ship = db.exec(select(Ship).where(Ship.is_default == True)).first()
+        default_ship = db.exec(select(CosmeticShip).where(CosmeticShip.is_default == True)).first()
         
         if default_ship:
-            player_ship = PlayerShip(
+            player_ship = OwnedShip(
                 player_id=profile.id,
-                ship_id=default_ship.id,
+                cosmetic_ship_id=default_ship.id,
                 equipped=True
             )
             db.add(player_ship)

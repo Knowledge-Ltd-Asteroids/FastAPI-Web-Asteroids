@@ -2,6 +2,9 @@ from datetime import datetime, timezone
 from sqlmodel import Field, Relationship, SQLModel
 from typing import Optional, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from .player_profile import PlayerProfile
+
 class GameSession(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     game_mode: str = Field(default="solo")

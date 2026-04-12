@@ -21,6 +21,7 @@ def initialize():
         users = [
             User(username="bob", email="bob@mail.com", password=password, role="user"),
             User(username="alice", email="alice@mail.com", password=password, role="user"),
+            User(username="admin", email="admin@mail.com", password=password, role="admin")
         ]
         for user in users:
             db.add(user)
@@ -30,6 +31,7 @@ def initialize():
         player_profiles = [
             PlayerProfile(user_id=1, currency=2000),
             PlayerProfile(user_id=2, currency=1500),
+            PlayerProfile(user_id=3, currency = 10000)
         ]
         for profile in player_profiles:
             db.add(profile)
@@ -40,35 +42,35 @@ def initialize():
                 name="Classic Arrow",
                 description="The original classic spaceship design",
                 price=0,
-                sprite="classic_arrow.png",
+                sprite="spaceship_thrust.png",
                 is_default=True
             ),
             CosmeticShip(
                 name="Plasma Dart",
                 description="A sleek blue spacecraft with plasma energy",
                 price=500,
-                sprite="plasma_dart.png",
+                sprite="spaceship_thrust.png",
                 is_default=False
             ),
             CosmeticShip(
                 name="Neon Viper",
                 description="Neon green serpentine ship with sharp angles",
                 price=750,
-                sprite="neon_viper.png",
+                sprite="spaceship_thrust.png",
                 is_default=False
             ),
             CosmeticShip(
                 name="Golden Phoenix",
                 description="Majestic gold ship with phoenix-like wings",
                 price=1000,
-                sprite="golden_phoenix.png",
+                sprite="spaceship_thrust.png",
                 is_default=False
             ),
             CosmeticShip(
                 name="Obsidian Shadow",
                 description="Dark obsidian ship that seems to absorb light",
                 price=1200,
-                sprite="obsidian_shadow.png",
+                sprite="spaceship_thrust.png",
                 is_default=False
             ),
         ]

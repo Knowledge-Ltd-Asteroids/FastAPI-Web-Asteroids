@@ -9,12 +9,20 @@ from . import router, templates
 async def user_home_view(
     request: Request,
     user: AuthDep,
-    db:SessionDep
+    db: SessionDep
 ):
+    equipped_ship = None
+    if user.profile and user.profile.ships:
+        for owned in user.profile.ships:
+            if owned.equipped:
+                equipped_ship = owned.cosmetic_ship
+                break
+    
     return templates.TemplateResponse(
-        request=request, 
+        request=request,
         name="app.html",
         context={
-            "user": user
+            "user": user,
+            "equipped_ship": equipped_ship
         }
     )

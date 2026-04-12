@@ -19,7 +19,7 @@ async def leaderboard_view(
     filter: str="solo_scores"
 ):
     rankings = []
-    title = "TOP 100 LEADERBOARD"
+    title = ""
 
     if filter == "solo_scores":
         rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.highest_solo_score.desc()).limit(100)).all()

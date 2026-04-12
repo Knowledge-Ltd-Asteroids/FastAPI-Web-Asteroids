@@ -14,13 +14,12 @@ from app.repositories import UserRepository
 async def store_view(
     request: Request,
     user: AuthDep,
-    db:SessionDep
+    db: SessionDep
 ):
-    # get all ships and all owned ships
-    all_ships = db.exec(select(Ship)).all()
-    owned_ship_ids = [playership.ship_id for playership in user.profile.ships]
+    all_ships = db.exec(select(CosmeticShip)).all()
+    
+    owned_ship_ids = [owned.cosmetic_ship_id for owned in user.profile.ships]
 
-    #only get those not owned
     available_ships = [ship for ship in all_ships if ship.id not in owned_ship_ids]
 
     return templates.TemplateResponse(
@@ -39,35 +38,35 @@ def purchase_ship(
     db: SessionDep,
     ship_id: int = Form()
 ):
-    ship_selected = db.exec(select(Ship).where(Ship.id == ship_id)).one_or_none()
+    ship_selected = db.exec(
+        select(CosmeticShip).where(CosmeticShip.id == ship_id)
+    ).one_or_none()
 
-    #could not find ship
+    # Could not find ship
     if not ship_selected:
         flash(request, "Could not find this ship!", "danger")
         return RedirectResponse(url=request.url_for("store_view"), status_code=status.HTTP_303_SEE_OTHER)
 
-    #ship already owned
-    owned_ship_ids = [playership.ship_id for playership in user.profile.ships]
+    # Ship already owned
+    owned_ship_ids = [owned.cosmetic_ship_id for owned in user.profile.ships]
     if ship_id in owned_ship_ids:
         flash(request, "You already own this ship!", "danger")
         return RedirectResponse(url=request.url_for("store_view"), status_code=status.HTTP_303_SEE_OTHER)
     
-    #insufficient funds
+    # Insufficient funds
     if user.profile.currency < ship_selected.price:
         flash(request, "Insufficient credits", "danger")
         return RedirectResponse(url=request.url_for("store_view"), status_code=status.HTTP_303_SEE_OTHER)
     
-    #update user currency and commit
     user.profile.currency -= ship_selected.price
 
-    #unequip currently equipped ship
-    for playership in user.profile.ships:
-        playership.equipped = False
+    for owned in user.profile.ships:
+        owned.equipped = False
     
-    player_ship = PlayerShip(
-        ship_id = ship_selected.id,
+    player_ship = OwnedShip(
+        cosmetic_ship_id = ship_selected.id,
         player_id = user.profile.id,
-        equipped=True
+        equipped = True
     )
 
     db.add(player_ship)
