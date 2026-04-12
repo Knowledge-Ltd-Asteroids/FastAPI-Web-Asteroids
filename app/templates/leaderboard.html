@@ -1,2 +1,191 @@
 {% extends "authenticated-base.html" %}
 {% block title %}Leaderboard{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .leaderboard-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        margin-bottom: 1.5rem;
+    }
+    
+    .leaderboard-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .leaderboard-tab {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--slate);
+        color: var(--slate);
+        text-decoration: none;
+        font-family: var(--font-pixel);
+        font-size: 0.7rem;
+    }
+    
+    .leaderboard-tab.active {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
+    
+    .leaderboard-section-title {
+        color: var(--light);
+        font-family: var(--font-pixel);
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .leaderboard-table {
+        background: rgba(28, 30, 38, 0.5);
+        border: 1px solid var(--slate);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .leaderboard-header {
+        display: grid;
+        grid-template-columns: 60px 1fr 100px;
+        padding: 0.75rem 1rem;
+        background: rgba(122, 141, 157, 0.2);
+        border-bottom: 1px solid var(--slate);
+    }
+    
+    .leaderboard-header span {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.7rem;
+    }
+    
+    .leaderboard-header span:last-child {
+        text-align: right;
+    }
+    
+    .leaderboard-row {
+        display: grid;
+        grid-template-columns: 60px 1fr 100px;
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid rgba(122, 141, 157, 0.1);
+    }
+    
+    .leaderboard-row.current-user {
+        background: rgba(225, 177, 0, 0.05);
+    }
+    
+    .leaderboard-rank {
+        font-family: var(--font-pixel);
+        font-size: 0.9rem;
+    }
+    
+    .leaderboard-rank.gold {
+        color: #FFD700;
+    }
+    
+    .leaderboard-rank.silver {
+        color: #C0C0C0;
+    }
+    
+    .leaderboard-rank.bronze {
+        color: #CD7F32;
+    }
+    
+    .leaderboard-rank.default {
+        color: var(--slate);
+    }
+    
+    .leaderboard-player {
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+    }
+    
+    .leaderboard-you {
+        color: var(--gold);
+        margin-left: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .leaderboard-score {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.9rem;
+        text-align: right;
+    }
+    
+    .leaderboard-empty {
+        color: var(--slate);
+        text-align: center;
+        padding: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+
+<h1 class="leaderboard-title">LEADERBOARD</h1>
+
+<div class="leaderboard-tabs">
+    <a href="/leaderboard?filter=solo_scores" 
+       class="leaderboard-tab {{ 'active' if filter == 'solo_scores' }}">
+        🚀 SOLO
+    </a>
+    
+    <a href="/leaderboard?filter=coop_scores" 
+       class="leaderboard-tab {{ 'active' if filter == 'coop_scores' }}">
+        👥 CO-OP
+    </a>
+    
+    <a href="/leaderboard?filter=asteroids_destroyed" 
+       class="leaderboard-tab {{ 'active' if filter == 'asteroids_destroyed' }}">
+        💥 ASTEROIDS
+    </a>
+</div>
+
+<h2 class="leaderboard-section-title">{{ title }}</h2>
+
+{% if rankings %}
+    <div class="leaderboard-table">
+        
+        <div class="leaderboard-header">
+            <span>RANK</span>
+            <span>PLAYER</span>
+            <span>SCORE</span>
+        </div>
+        
+        {% for profile in rankings %}
+        <div class="leaderboard-row {{ 'current-user' if profile.user_id == user.id }}">
+            
+            {% if loop.index == 1 %}
+                <span class="leaderboard-rank gold">{{ loop.index }}</span>
+            {% elif loop.index == 2 %}
+                <span class="leaderboard-rank silver">{{ loop.index }}</span>
+            {% elif loop.index == 3 %}
+                <span class="leaderboard-rank bronze">{{ loop.index }}</span>
+            {% else %}
+                <span class="leaderboard-rank default">{{ loop.index }}</span>
+            {% endif %}
+            
+            <span class="leaderboard-player">
+                {{ profile.user.username }}
+                {% if profile.user_id == user.id %}
+                    <span class="leaderboard-you">(YOU)</span>
+                {% endif %}
+            </span>
+            
+            <span class="leaderboard-score">
+                {% if filter == 'solo_scores' %}
+                    {{ profile.highest_solo_score }}
+                {% elif filter == 'coop_scores' %}
+                    {{ profile.highest_coop_score }}
+                {% elif filter == 'asteroids_destroyed' %}
+                    {{ profile.asteroids_destroyed }}
+                {% endif %}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="leaderboard-empty">No rankings available.</p>
+{% endif %}
+
+{% endblock %}
