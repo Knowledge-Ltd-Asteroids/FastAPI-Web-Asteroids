@@ -23,23 +23,36 @@ class UserRepository:
             self.db.rollback()
             raise
 
-    def search_users(self, query: str, page:int=1, limit:int=10) -> Tuple[list[User], Pagination]:
+    def search_users(self, query: str, page: int = 1, limit: int = 10, sort: str = "newest") -> Tuple[list[User], Pagination]:
         offset = (page - 1) * limit
         db_qry = select(User)
+        
         if query:
             db_qry = db_qry.where(
                 User.username.ilike(f"%{query}%") | User.email.ilike(f"%{query}%")
             )
+
+        #sorting for admin page        
+        if sort == "newest":
+            db_qry = db_qry.order_by(User.created_at.desc())
+        elif sort == "oldest":
+            db_qry = db_qry.order_by(User.created_at.asc())
+        elif sort == "username":
+            db_qry = db_qry.order_by(User.username.asc())
+        
         count_qry = select(func.count()).select_from(db_qry.subquery())
-        count_todos = self.db.exec(count_qry).one()
-
+        total_count = self.db.exec(count_qry).one()
+        
         users = self.db.exec(db_qry.offset(offset).limit(limit)).all()
-        pagination = Pagination(total_count=count_todos, current_page=page, limit=limit)
-
+        pagination = Pagination(total_count=total_count, current_page=page, limit=limit)
+        
         return users, pagination
 
     def get_by_username(self, username: str) -> Optional[User]:
         return self.db.exec(select(User).where(User.username == username)).one_or_none()
+    
+    def get_by_email(self, email: str) -> Optional[User]:
+        return self.db.exec(select(User).where(User.email == email)).one_or_none()
 
     def get_by_id(self, user_id: int) -> Optional[User]:
         return self.db.get(User, user_id)

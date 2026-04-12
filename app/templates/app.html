@@ -1,5 +1,7 @@
 {% extends "authenticated-base.html" %}
 
+{% block title %}Home{% endblock %}
+
 {% block external_js %}
 <script src="{{ url_for('static', path='js/app.js')}}"></script>
 {% endblock %}
@@ -215,13 +217,13 @@
 
 
     <div class="play-actions">
-        <a href="/app/play/solo" class="play-card">
+        <a href="#" class="play-card">
             <div class="play-icon">🚀</div>
             <div class="play-title">SOLO</div>
-            <div class="play-description">Earn credits • Set records</div>
+            <div class="play-description">Climb the Ranks</div>
         </a>
         
-        <a href="/app/play/coop" class="play-card">
+        <a href="#" class="play-card">
             <div class="play-icon">👥</div>
             <div class="play-title">CO-OP</div>
             <div class="play-description">Team up with another pilot</div>
@@ -252,11 +254,11 @@
         </div>
         
         <div class="ship-actions">
-            <a href="/app/hangar" class="ship-action-btn">
+            <a href="/hangar" class="ship-action-btn">
                 <span class="material-symbols-outlined">swap_horiz</span>
                 SWITCH
             </a>
-            <a href="/app/store" class="ship-action-btn">
+            <a href="/store" class="ship-action-btn">
                 <span class="material-symbols-outlined">add</span>
                 BUY
             </a>
