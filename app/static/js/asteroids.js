@@ -4,6 +4,20 @@ const c = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+const asteroidSprites = {
+    big2: new Image(),
+    medium1: new Image(),
+    medium2: new Image(),
+    small1: new Image(),
+    small2: new Image()
+};
+
+asteroidSprites.big2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_big2.png';
+asteroidSprites.medium1.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_medium1.png';
+asteroidSprites.medium2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_medium2.png';
+asteroidSprites.small1.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_small1.png';
+asteroidSprites.small2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_small2.png';
+
 c.fillStyle = "black";
 c.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -42,6 +56,18 @@ class SpaceShip {
         c.closePath();
         c.strokeStyle = "white";
         c.stroke();
+
+        if (keys.w.pressed) {
+            const flameLength = 15 + Math.random() * 10;
+            c.beginPath();
+            c.moveTo(this.position.x - 10, this.position.y - 5); // Top of Truster
+            c.lineTo(this.position.x - 25, this.position.y); // Tip of Truster
+            c.lineTo(this.position.x - 10, this.position.y + 5); // Bottom of Truster
+            c.closePath();
+            c.fillStyle = "orange";
+            c.fill();
+        }
+
         c.restore();
     }
 
@@ -136,18 +162,54 @@ class Asteroid {
         this.position = position;
         this.velocity = velocity;
         this.radius = radius;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.03;
+
+        if (radius > 40) {
+            this.sprite = asteroidSprites.big2;
+        } else if (radius > 20) {
+            if (Math.random() < 0.5) {
+                this.sprite = asteroidSprites.medium1;
+            } else {
+                this.sprite = asteroidSprites.medium2;
+            }
+        } else {
+            if (Math.random() < 0.5) {
+                this.sprite = asteroidSprites.small1;
+            } else {
+                this.sprite = asteroidSprites.small2;
+            }
+        }
     }
 
     draw() {
-        c.beginPath();
-        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2, false);
-        c.closePath();
-        c.strokeStyle = "white";
-        c.stroke();
+
+        c.save();
+        c.translate(this.position.x, this.position.y);
+        c.rotate(this.rotation);
+
+        const size = this.radius * 2;
+
+        if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
+
+            c.drawImage(this.sprite, -this.radius, -this.radius, size, size);
+        }
+
+        else {
+            c.beginPath();
+            c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2, false);
+            c.closePath();
+            c.strokeStyle = "white";
+            c.stroke();
+        }
+        c.restore();
     }
 
     update() {
         this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+        this.rotation += this.rotationSpeed;
     }
 }
 
@@ -210,6 +272,7 @@ const keys = {
 
 const projectiles = [];
 let animationID = null;
+const asteroidMap = new Map();
 
 const Spaceship_Speed = 4;
 const Rotate_Speed = 0.05;
@@ -266,6 +329,20 @@ function animate() {
 
     spaceship.update();
 
+    if (spaceship.position.x > canvas.width) {
+        spaceship.position.x = 0;
+    }
+    if (spaceship.position.x < 0) {
+        spaceship.position.x = canvas.width;
+    }
+    if (spaceship.position.y > canvas.height) {
+        spaceship.position.y = 0;
+    }
+    if (spaceship.position.y < 0) {
+        spaceship.position.y = canvas.height;
+    }
+
+
     for (let i = projectiles.length - 1; i >= 0; i--) {
         const projectile = projectiles[i];
         projectile.update();
@@ -282,8 +359,24 @@ function animate() {
 
     for (let i = gameState.asteroids.length - 1; i >= 0; i--) {
         const asteroidData = gameState.asteroids[i];
-        const asteroid = new Asteroid(asteroidData);
-        asteroid.update();
+
+        if (!asteroidMap.has(asteroidData.id)) {
+            asteroidMap.set(asteroidData.id, new Asteroid(asteroidData));
+        }
+
+        const asteroid = asteroidMap.get(asteroidData.id);
+        asteroid.position.x += (asteroidData.position.x - asteroid.position.x) * 0.5;
+        asteroid.position.y += (asteroidData.position.y - asteroid.position.y) * 0.5;
+
+        asteroid.rotation += asteroid.rotationSpeed;
+        asteroid.draw();
+    }
+
+    const activeIds = new Set(gameState.asteroids.map(a => a.id));
+    for (const id of asteroidMap.keys()) {
+        if (!activeIds.has(id)) {
+            asteroidMap.delete(id);
+        }
     }
 
     if (gameMode === "multiplayer" && opponentData) {
@@ -309,24 +402,44 @@ function animate() {
     sendPlayerState();
 }
 
+let difficulty = 1;
+let spawnInterval = 3000;
+
+const difficultyInterval = window.setInterval(() => {
+    difficulty += 0.4;
+    spawnInterval = Math.max(800, spawnInterval - 130);
+
+    console.log(`Difficulty: ${difficulty} | Spawn Interval: ${spawnInterval}ms`);
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: "difficulty_update",
+            data: {
+                difficulty: difficulty,
+                spawnInterval: spawnInterval,
+            }
+        }));
+    }
+}, 15000);
+
 function renderStats() {
     if (gameMode === "solo") {
         c.fillStyle = "white";
         c.font = "20px Arial";
         c.fillText(`Lives: ${gameState.playerLives}`, 20, 30);
         c.fillText(`Score: ${gameState.playerScore}`, 20, 60);
-        
+
         if (!ws || ws.readyState !== WebSocket.OPEN) {
             c.fillStyle = "red";
             c.fillText("DISCONNECTED", canvas.width - 200, 30);
         }
     } else {
         const playerIds = Object.keys(gameState.players);
-        
+
         let selfData = gameState.players[playerId];
         let opponentId = playerIds.find(pid => pid !== playerId);
         let opponentPlayerData = opponentId ? gameState.players[opponentId] : null;
-        
+
         if (selfData) {
             document.getElementById("p1-name").textContent = playerName || "Player 1";
             document.getElementById("p1-score").textContent = selfData.score;
@@ -334,18 +447,18 @@ function renderStats() {
             gameState.playerLives = selfData.lives;
             gameState.playerScore = selfData.score;
         }
-        
+
         if (opponentPlayerData) {
             document.getElementById("p2-name").textContent = opponentName || "Player 2";
             document.getElementById("p2-score").textContent = opponentPlayerData.score;
             document.getElementById("p2-lives").textContent = opponentPlayerData.lives;
-            
+
             opponentData = {
                 position: opponentPlayerData.position,
                 rotation: opponentPlayerData.rotation
             };
         }
-        
+
         const statusEl = document.getElementById("connection-status");
         if (ws && ws.readyState === WebSocket.OPEN) {
             statusEl.textContent = "Connected";
@@ -365,13 +478,13 @@ function initializeWebSocket() {
         const pathSegments = window.location.pathname.split("/");
         const inviteCode = pathSegments[pathSegments.length - 1];
         gameMode = "multiplayer";
-        
+
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         wsUrl = `${protocol}//${window.location.host}/ws/multiplayer/${inviteCode}`;
     } else {
         const sessionId = "solo_" + Date.now();
         gameMode = "solo";
-        
+
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         wsUrl = `${protocol}//${window.location.host}/ws/solo/${sessionId}`;
     }
@@ -382,12 +495,12 @@ function initializeWebSocket() {
 
     ws.onopen = () => {
         console.log(`[${gameMode.toUpperCase()}] WebSocket connected`);
-        
+
         ws.send(JSON.stringify({
             canvas_width: canvas.width,
             canvas_height: canvas.height,
         }));
-        
+
         animate();
     };
 
@@ -406,12 +519,12 @@ function initializeWebSocket() {
 
         if (message.type === "player_joined") {
             console.log(`Player joined: ${message.username}`);
-            
+
             if (message.player_id !== playerId) {
                 opponentName = message.username;
                 console.log(`Opponent: ${opponentName}`);
             }
-            
+
             if (message.other_players) {
                 for (const [pId, pInfo] of Object.entries(message.other_players)) {
                     if (pId !== playerId) {

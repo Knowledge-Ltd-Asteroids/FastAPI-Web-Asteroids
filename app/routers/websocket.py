@@ -105,6 +105,12 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
             if message["type"] == "player_update":
                 session.update_player_state(player_id, message["data"])
             
+            elif message["type"] == "difficulty_update":  # add this
+                session.update_difficulty(
+                message["data"]["difficulty"],
+                message["data"]["spawnInterval"]
+                )
+            
             elif message["type"] == "game_over":
                 pass
     
