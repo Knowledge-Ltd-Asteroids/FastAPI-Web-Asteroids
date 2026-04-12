@@ -2,24 +2,24 @@ from sqlmodel import Field, Relationship, SQLModel
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .player_profile import PlayerProfile
+    from .user import User
 
-class Ship(SQLModel, table=True):
+class CosmeticShip(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(unique=True)
-    description: str
-    price: int
-    sprite: str
-    is_default: bool = False
+    name: str = Field(unique=True, index=True)
+    description: str = Field(default="")
+    price: int = Field(default=0)
+    sprite: str = Field(default="default_ship.png")
+    is_default: bool = Field(default=False)
 
-    owners: list["PlayerShip"] = Relationship(back_populates="ship")
+    owned_by: list["OwnedShip"] = Relationship(back_populates="cosmetic_ship")
 
-class PlayerShip(SQLModel, table=True):
+
+class OwnedShip(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    ship_id: int = Field(foreign_key="ship.id")
-    player_id: int = Field(foreign_key="playerprofile.id")
 
-    equipped: bool = False
+    user_id: int = Field(foreign_key="user.id", index=True)
+    user: Optional["User"] = Relationship(back_populates="owned_ships")
 
-    player: Optional["PlayerProfile"] = Relationship(back_populates="ships")
-    ship: Optional["Ship"] = Relationship(back_populates="owners")
+    cosmetic_ship_id: int = Field(foreign_key="cosmeticship.id", index=True)
+    cosmetic_ship: Optional["CosmeticShip"] = Relationship(back_populates="owned_by")

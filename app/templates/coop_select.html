@@ -1,0 +1,231 @@
+{% extends "authenticated-base.html" %}
+{% block title %}CO-OP Game Mode{% endblock %}
+
+{% block internal_css %}
+<style>
+    .coop-select-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px);
+        padding: 2rem;
+    }
+
+    .coop-select-card {
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .coop-select-title {
+        text-align: center;
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .coop-select-subtitle {
+        text-align: center;
+        color: var(--slate);
+        font-size: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .option-grid {
+        display: flex;
+        margin-bottom: 2rem;
+    }
+
+    .option-card {
+        background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 69, 0, 0.1));
+        border: 3px solid var(--gold);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        width: 100%;
+    }
+
+    .option-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(255, 165, 0, 0.3);
+        border-color: var(--coral);
+    }
+
+    .option-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .option-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .option-description {
+        color: var(--slate);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .join-section {
+        background: rgba(28, 30, 38, 0.6);
+        border: 2px solid var(--slate);
+        border-radius: 1rem;
+        padding: 2rem;
+    }
+
+    .join-title {
+        color: var(--light);
+        font-family: var(--font-pixel);
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .join-form {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .join-input {
+        flex: 1;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--slate);
+        color: var(--light);
+        border-radius: 0.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .join-input:focus {
+        outline: none;
+        border-color: var(--gold);
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .join-input::placeholder {
+        color: var(--slate);
+    }
+
+    .join-btn {
+        padding: 0.75rem 1.5rem;
+        background: var(--gold);
+        color: var(--dark);
+        border: none;
+        border-radius: 0.5rem;
+        font-family: var(--font-pixel);
+        font-size: 0.9rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .join-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px var(--gold);
+    }
+
+    .back-btn {
+        display: inline-block;
+        margin-top: 2rem;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid var(--slate);
+        background: transparent;
+        color: var(--slate);
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-family: var(--font-pixel);
+        font-size: 0.9rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .back-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        transform: scale(1.05);
+    }
+
+    .divider {
+        text-align: center;
+        color: var(--slate);
+        margin: 2rem 0;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        display: inline-block;
+        width: 45%;
+        height: 2px;
+        background: var(--slate);
+        vertical-align: middle;
+        margin: 0 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="coop-select-container">
+    <div class="coop-select-card">
+        <h1 class="coop-select-title">CO-OP GAME</h1>
+        <p class="coop-select-subtitle">Team up with another pilot!</p>
+
+        <div class="option-grid">
+            <form action="/app/play/coop/create" method="POST" style="display: contents;">
+                <button type="submit" class="option-card" style="cursor: pointer; background: inherit; border: inherit; padding: inherit;">
+                    <div class="option-icon">🎁</div>
+                    <div class="option-title">Create Room</div>
+                    <div class="option-description">Start a new room and share the code with a friend</div>
+                </button>
+            </form>
+        </div>
+
+        <div class="join-section" id="join-section">
+            <div class="join-title">Join Existing Game</div>
+            <form action="/app/play/coop/join" method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="join-form">
+                    <input 
+                        type="text" 
+                        name="invite_code" 
+                        class="join-input" 
+                        placeholder="Enter invite code (e.g., A1B2C3D4)"
+                        maxlength="8"
+                        required
+                    >
+                    <button type="submit" class="join-btn">JOIN</button>
+                </div>
+                <p style="color: var(--slate); font-size: 0.85rem; margin: 0;">
+                    Enter the 8-character code your friend shared with you
+                </p>
+            </form>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/app" class="back-btn">BACK</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,28 +5,32 @@ from pydantic import EmailStr
 from pwdlib import PasswordHash
 
 if TYPE_CHECKING:
-    from .player_profile import PlayerProfile
-    from .ship import Ship
+    from .ship import OwnedShip
 
 class UserBase(SQLModel):
     username: str
     email: EmailStr
-    role: str
 
 class UserCreate(SQLModel):
     username: str = Field(min_length=5, max_length=128)
     email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=128)
+    role: str = Field(default="user")
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(unique=True)
+    email: EmailStr = Field(unique=True)
     password: str
+    currency: int = Field(default=0)
+    role: str = Field(default="user")
+    active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    def check_password(self, plaintext_password:str):
+    owned_ships: list["OwnedShip"] = Relationship(back_populates="user")
+
+    def check_password(self, plaintext_password: str) -> bool:
         return PasswordHash.recommended().verify(password=plaintext_password, hash=self.password)
-    
-    profile: Optional["PlayerProfile"] = Relationship(back_populates="user")
 
 class UserUpdate(SQLModel):
     username: Optional[str] = Field(default=None, min_length=5, max_length=128)
