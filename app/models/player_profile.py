@@ -20,4 +20,4 @@ class PlayerProfile(SQLModel, table=True):
 
     user: Optional["User"] = Relationship(back_populates="profile")
     ships: list["OwnedShip"] = Relationship(back_populates="player")
-    game_sessions: list["GameSessionPlayer"] = Relationship(back_populates="player")
+    # game_sessions: list["GameSessionPlayer"] = Relationship(back_populates="player")

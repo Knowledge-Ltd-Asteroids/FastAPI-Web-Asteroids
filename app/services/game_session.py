@@ -1,13 +1,14 @@
 import asyncio
 import random
 import uuid
+import math
 from typing import Dict, List, Optional, Callable
 from datetime import datetime
 from app.services.physics import circle_collide, circle_triangle_collision, wrap_position
 
 
 class AsteroidGameSession:
-    TICK_RATE = 20
+    TICK_RATE = 40
     TICK_INTERVAL = 1 / TICK_RATE
     ASTEROID_SPAWN_INTERVAL = 3000
     
@@ -22,6 +23,7 @@ class AsteroidGameSession:
         self.asteroids: List[Dict] = []
         self.players: Dict[str, Dict] = {}
         self.last_spawn_time = 0
+        self.difficulty = 1
         
         self.broadcast_callback: Optional[Callable] = None
         self.task: Optional[asyncio.Task] = None
@@ -58,54 +60,65 @@ class AsteroidGameSession:
         if "projectiles" in state:
             player["projectiles"] = state["projectiles"]
     
+    def update_difficulty(self, difficulty: float, spawn_interval: float) -> None:
+        self.difficulty = difficulty
+        self.ASTEROID_SPAWN_INTERVAL = spawn_interval
+        print(f"Difficulty updated: {difficulty} | Spawn Interval: {spawn_interval}ms")
+        
     def spawn_asteroids(self, current_time_ms: float) -> None:
         if current_time_ms - self.last_spawn_time < self.ASTEROID_SPAWN_INTERVAL:
             return
         
         self.last_spawn_time = current_time_ms
+
+        spawn_count = math.floor(self.difficulty) + 2
+
+        for i in range(spawn_count):    
+            edge = random.randint(0, 3)
+            radius = random.uniform(30, 50)
+            
+            speed = min(random.uniform(2, 5) * self.difficulty, 12)
+            
+            if edge == 0:
+                x, y = -radius, random.uniform(0, self.CANVAS_HEIGHT)
+                vx = speed
+                vy = random.uniform(-speed, speed)
+            elif edge == 1:
+                x, y = random.uniform(0, self.CANVAS_WIDTH), self.CANVAS_HEIGHT + radius
+                vx = random.uniform(-speed, speed)
+                vy = -speed
+            elif edge == 2:
+                x, y = self.CANVAS_WIDTH + radius, random.uniform(0, self.CANVAS_HEIGHT)
+                vx = -speed
+                vy = random.uniform(-speed, speed)
+            else:
+                x, y = random.uniform(0, self.CANVAS_WIDTH), -radius
+                vx = random.uniform(-speed, speed)
+                vy = speed
+            
+            asteroid = {
+                "id": str(uuid.uuid4()),
+                "position": {"x": x, "y": y},
+                "velocity": {"x": vx, "y": vy},
+                "radius": radius,
+            }
         
-        edge = random.randint(0, 3)
-        radius = random.uniform(10, 50)
-        
-        speed = random.uniform(1, 3)
-        
-        if edge == 0:
-            x, y = -radius, random.uniform(0, self.CANVAS_HEIGHT)
-            vx = speed
-            vy = random.uniform(-speed, speed)
-        elif edge == 1:
-            x, y = random.uniform(0, self.CANVAS_WIDTH), self.CANVAS_HEIGHT + radius
-            vx = random.uniform(-speed, speed)
-            vy = -speed
-        elif edge == 2:
-            x, y = self.CANVAS_WIDTH + radius, random.uniform(0, self.CANVAS_HEIGHT)
-            vx = -speed
-            vy = random.uniform(-speed, speed)
-        else:
-            x, y = random.uniform(0, self.CANVAS_WIDTH), -radius
-            vx = random.uniform(-speed, speed)
-            vy = speed
-        
-        asteroid = {
-            "id": str(uuid.uuid4()),
-            "position": {"x": x, "y": y},
-            "velocity": {"x": vx, "y": vy},
-            "radius": radius,
-        }
-        
-        self.asteroids.append(asteroid)
+            self.asteroids.append(asteroid)
     
     def update_asteroids(self) -> None:
+        self.asteroids = [
+        asteroid for asteroid in self.asteroids
+        if not (
+            asteroid["position"]["x"] + asteroid["radius"] < 0 or
+            asteroid["position"]["x"] - asteroid["radius"] > self.CANVAS_WIDTH or
+            asteroid["position"]["y"] + asteroid["radius"] < 0 or
+            asteroid["position"]["y"] - asteroid["radius"] > self.CANVAS_HEIGHT
+        )
+    ]
+    
         for asteroid in self.asteroids:
             asteroid["position"]["x"] += asteroid["velocity"]["x"]
             asteroid["position"]["y"] += asteroid["velocity"]["y"]
-
-            asteroid["position"] = wrap_position(
-                asteroid["position"],
-                self.CANVAS_WIDTH,
-                self.CANVAS_HEIGHT,
-                asteroid["radius"]
-            )
     
     def check_collisions(self) -> List[Dict]:
         collision_events = []
@@ -117,6 +130,8 @@ class AsteroidGameSession:
             
             for proj_idx, projectile in enumerate(player["projectiles"]):
                 for ast_idx, asteroid in enumerate(self.asteroids):
+                    if ast_idx in asteroids_to_remove:
+                            continue
                     if circle_collide(projectile, asteroid):
                         collision_events.append({
                             "type": "asteroid_destroyed",
@@ -124,6 +139,32 @@ class AsteroidGameSession:
                             "asteroid_id": asteroid["id"],
                             "score_gained": int(100 * (50 / asteroid["radius"]))
                         })
+
+                        if asteroid["radius"] > 30:
+                            new_radius = asteroid["radius"] / 2
+                            random_angle = random.uniform(0, 2 * 3.14159)
+
+                            player_pos = player["position"]
+                            asteroid_pos = asteroid["position"]
+                            angle_to_ship = math.atan2(
+                                player_pos["y"] - asteroid_pos["y"],
+                                player_pos["x"] - asteroid_pos["x"]
+                            )
+
+                            self.asteroids.append({
+                                "id": str(uuid.uuid4()),
+                                "position": {"x": asteroid_pos["x"], "y": asteroid_pos["y"]},
+                                "velocity": {"x": math.cos(angle_to_ship) * 2, "y": math.sin(angle_to_ship) * 2},
+                                "radius": new_radius,
+                            })
+
+                            self.asteroids.append({
+                                "id": str(uuid.uuid4()),
+                                "position": {"x": asteroid_pos["x"], "y": asteroid_pos["y"]},
+                                "velocity": {"x": math.cos(random_angle) * 2, "y": math.sin(random_angle) * 2},
+                                "radius": new_radius,
+                        })
+
                         asteroids_to_remove.add(ast_idx)
                         projectiles_to_remove[player_id].add(proj_idx)
                         break
