@@ -29,8 +29,8 @@ class User(UserBase, table=True):
     profile: Optional["PlayerProfile"] = Relationship(back_populates="user")
 
 class UserUpdate(SQLModel):
-    username: Optional[str] = Field(default=None, min_length=5, max_length=128)
-    email: Optional[EmailStr] = Field(default=None, max_length=255)
+    username: Optional[str] = Field(default=None)
+    email: Optional[EmailStr] = Field(default=None)
 
 class UserResponse(UserBase):
     id: int

@@ -21,6 +21,7 @@ def initialize():
         users = [
             User(username="bob", email="bob@mail.com", password=password, role="regular_user"),
             User(username="alice", email="alice@mail.com", password=password, role="regular_user"),
+            User(username="admin", email="admin@mail.com", password=password, role="admin"),
         ]
         for user in users:
             db.add(user)
@@ -47,10 +48,22 @@ def initialize():
                 solo_games_played=3, 
                 coop_games_played=2,
                 asteroids_destroyed=102, 
-                currency=750,
+                currency=1000,
                 total_seconds_played=415,
                 last_played=datetime.now(timezone.utc) - timedelta(hours=5)
             ),
+            PlayerProfile(
+                user_id=3, 
+                display_name="admin",
+                highest_solo_score=9999, 
+                highest_coop_score=9999,
+                solo_games_played=999, 
+                coop_games_played=9999,
+                asteroids_destroyed=999, 
+                currency=9999,
+                total_seconds_played=999,
+                last_played=datetime.now(timezone.utc) - timedelta(hours=5)
+            )
         ]
         for profile in profiles:
             db.add(profile)
@@ -58,11 +71,18 @@ def initialize():
 
         ships = [
             Ship(name="Starter Ship", description="Starter Ship description", 
-                 price=0, sprite="Ship1.png", is_default=True),
+                 price=0, sprite="spaceship_thrust.png", is_default=True),
             Ship(name="Ship2", description="Ship 2 description", 
-                 price=500, sprite="Ship2.png"),
+                 price=500, sprite="spaceship_thrust.png"),
             Ship(name="Ship3", description="Ship 3 description", 
-                 price=1000, sprite="Ship3.png"),
+                 price=1000, sprite="spaceship_thrust.png"),
+            Ship(name="Ship4", description="Ship4 description", 
+                 price=2000, sprite="spaceship_thrust.png", is_default=True),
+            Ship(name="Ship5", description="Ship 5 description", 
+                 price=100, sprite="spaceship_thrust.png"),
+            Ship(name="Ship6", description="Ship 6 description", 
+                 price=500, sprite="spaceship_thrust.png"),
+                 
         ]
         for ship in ships:
             db.add(ship)

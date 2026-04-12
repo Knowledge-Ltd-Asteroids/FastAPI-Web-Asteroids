@@ -15,12 +15,29 @@ from app.repositories import UserRepository
 async def leaderboard_view(
     request: Request,
     user: AuthDep,
-    db:SessionDep
-):  
+    db:SessionDep,
+    filter: str="solo_scores"
+):
+    rankings = []
+    title = "TOP 100 LEADERBOARD"
+
+    if filter == "solo_scores":
+        rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.highest_solo_score.desc()).limit(100)).all()
+        lb_title = "SOLO SCORES"
+    elif filter == "coop_scores":
+        rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.highest_coop_score.desc()).limit(100)).all()
+        lb_title = "CO-OP SCORES"
+    elif filter == "asteroids_destroyed":
+        rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.asteroids_destroyed.desc()).limit(100)).all()
+        lb_title = "ASTEROIDS DESTROYED"
+
     return templates.TemplateResponse(
         request=request, 
         name="leaderboard.html",
         context={
             "user": user,
+            "rankings": rankings,
+            "title": lb_title,
+            "filter": filter 
         }
     )

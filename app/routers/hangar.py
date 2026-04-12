@@ -16,11 +16,54 @@ async def user_hangar_view(
     request: Request,
     user: AuthDep,
     db:SessionDep
-):  
+):
+    #get all ships and IDs of owned ships
+    all_ships = db.exec(select(Ship)).all()
+    owned_ship_ids = [playership.ship_id for playership in user.profile.ships]
+
+    #only get the owned ships
+    owned_ships = [ship for ship in all_ships if ship.id in owned_ship_ids]
+
+    #get the equipped ship to be highlighted
+    equipped_ship_id = None
+    for playership in user.profile.ships:
+        if playership.equipped:
+            equipped_ship_id = playership.ship_id
+            break
+    
     return templates.TemplateResponse(
         request=request, 
         name="hangar.html",
         context={
+            "owned_ships": owned_ships,
             "user": user,
+            "equipped_ship_id": equipped_ship_id
         }
     )
+
+@router.post("/hangar/equip", response_class=HTMLResponse)
+def equip_ship(
+    request: Request,
+    user: AuthDep,
+    db:SessionDep,
+    ship_id: int = Form()
+):
+    # check for ownership of the selected ship
+    player_ship_selected = db.exec(select(PlayerShip).where
+                                   (PlayerShip.ship_id == ship_id,
+                                    PlayerShip.player_id == user.profile.id)).one_or_none()
+
+    if not player_ship_selected:
+        flash(request, "Could not find this ship!", "danger")
+        return RedirectResponse(url=request.url_for("user_hangar_view"), status_code=status.HTTP_303_SEE_OTHER)
+    
+    #unequip the currently equipped ship
+    for playership in user.profile.ships:
+        playership.equipped = False
+
+    #equip the selected ship
+    player_ship_selected.equipped = True
+    db.commit()
+
+    flash(request, f"{player_ship_selected.ship.name} successfully equipped!", "success")
+    return RedirectResponse(url=request.url_for("user_hangar_view"), status_code=status.HTTP_303_SEE_OTHER)

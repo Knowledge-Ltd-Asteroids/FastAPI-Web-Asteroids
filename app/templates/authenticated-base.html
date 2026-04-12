@@ -71,6 +71,10 @@
         white-space: nowrap;
     }
 
+    .username-display {
+        text-transform: none !important;
+    }
+
     .nav-link:hover {
         color: var(--light);
     }
@@ -331,6 +335,13 @@
                     <span class="material-symbols-outlined">leaderboard</span>
                     <span class="nav-label">Leaderboard</span>
                 </a>
+
+                {% if user and user.role == "admin" %}
+                <a href="/admin" class="nav-link {{ 'active' if request.path == '/admin' }}">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    <span class="nav-label">ADMIN</span>
+                </a>
+                {% endif %}
             </div>
         </div>
         
@@ -343,12 +354,12 @@
             <div class="user-menu">
                 <a href="/profile" class="nav-link {{ 'active' if request.path == '/profile' }}">
                     <span class="material-symbols-outlined">account_circle</span>
-                    <span class="nav-label">{{ user.username | upper if user else 'PLAYER' }}</span>
+                    <span class="nav-label username-display">{{ user.username if user else 'PLAYER' }}</span>
                 </a>
                 
                 <a href="/logout" class="logout-btn">
                     <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
-                    <span>EXIT</span>
+                    <span>LOGOUT</span>
                 </a>
             </div>
         </div>
