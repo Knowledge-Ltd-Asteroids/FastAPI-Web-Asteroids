@@ -1,13 +1,16 @@
 import asyncio
 import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status, Cookie
-from fastapi.exceptions import WebSocketException
-import jwt
+import uuid
+from datetime import datetime, timezone
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
 from app.services.game_session import AsteroidGameSession
 from app.config import get_settings
 from app.database import get_session
 from app.repositories.lobby import LobbyRepository
 from app.repositories.user import UserRepository
+from app.models import GameSession, GameSessionPlayer, PlayerProfile
+from sqlmodel import select
+import jwt
 
 router = APIRouter(tags=["WebSocket"])
 
@@ -22,7 +25,6 @@ async def get_user_from_websocket(websocket: WebSocket) -> dict | None:
         token = websocket.cookies.get("access_token")
         if not token:
             return None
-        
         payload = jwt.decode(token, get_settings().secret_key, algorithms=[get_settings().jwt_algorithm])
         user_id = payload.get("sub")
         return {"user_id": int(user_id)} if user_id else None
@@ -33,17 +35,14 @@ async def get_user_from_websocket(websocket: WebSocket) -> dict | None:
 async def broadcast_to_room(session_id: str, message: dict) -> None:
     if session_id not in active_connections:
         return
-    
     disconnected = []
     for websocket in active_connections[session_id]:
         try:
             await websocket.send_json(message)
         except Exception:
             disconnected.append(websocket)
-    
     for ws in disconnected:
         active_connections[session_id].remove(ws)
-
 
 async def game_broadcaster(session_id: str) -> None:
     if session_id not in active_sessions:
@@ -61,101 +60,141 @@ async def game_broadcaster(session_id: str) -> None:
 @router.websocket("/ws/solo/{session_id}")
 async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
     await websocket.accept()
-    
-    init_data = await websocket.receive_text()
-    init_message = json.loads(init_data)
-    
-    canvas_width = init_message.get("canvas_width", 1280)
-    canvas_height = init_message.get("canvas_height", 720)
-    
-    if session_id not in active_sessions:
-        session = AsteroidGameSession(session_id, mode="solo", canvas_width=canvas_width, canvas_height=canvas_height)
-        active_sessions[session_id] = session
-        active_connections[session_id] = []
-        
-        async def on_tick(world_state):
-            await broadcast_to_room(session_id, {
-                "type": "game_state",
-                "data": world_state,
-            })
-        
-        session.broadcast_callback = on_tick
-        
-        game_task = asyncio.create_task(session.start())
-    else:
-        session = active_sessions[session_id]
-    
-    active_connections[session_id].append(websocket)
-    
-    player_id = f"solo_player_{len(active_connections[session_id])}"
-    session.add_player(player_id)
-    
-    await websocket.send_json({
-        "type": "connection",
-        "player_id": player_id,
-        "canvas_width": session.CANVAS_WIDTH,
-        "canvas_height": session.CANVAS_HEIGHT,
-    })
-    
-    try:
-        while True:
-            data = await websocket.receive_text()
-            message = json.loads(data)
-            
-            if message["type"] == "player_update":
-                session.update_player_state(player_id, message["data"])
-            
-            elif message["type"] == "difficulty_update":  # add this
-                session.update_difficulty(
-                message["data"]["difficulty"],
-                message["data"]["spawnInterval"]
-                )
-            
-            elif message["type"] == "game_over":
-                pass
-    
-    except WebSocketDisconnect:
-        active_connections[session_id].remove(websocket)
-        session.remove_player(player_id)
-        
-        if len(session.players) == 0:
-            session.stop()
-            if session_id in active_sessions:
-                del active_sessions[session_id]
-            if session_id in active_connections:
-                del active_connections[session_id]
-    
-    except Exception as e:
-        print(f"WebSocket error in {session_id}: {e}")
-        await websocket.close(code=status.WS_1011_SERVER_ERROR)
 
-
-@router.websocket("/ws/multiplayer/{invite_code}")
-async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str):
-    await websocket.accept()
-    
     user_data = await get_user_from_websocket(websocket)
     if not user_data:
         await websocket.send_json({"type": "error", "message": "Unauthorized"})
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
-    
+
     user_id = user_data["user_id"]
-    
     db = next(get_session())
+
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
+    username = user.username if user else "Unknown"
+
+    profile = db.exec(
+        select(PlayerProfile).where(PlayerProfile.user_id == user_id)
+    ).first()
+    if not profile:
+        await websocket.send_json({"type": "error", "message": "Player profile not found"})
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
+    init_data = await websocket.receive_text()
+    init_message = json.loads(init_data)
+    canvas_width  = init_message.get("canvas_width",  1280)
+    canvas_height = init_message.get("canvas_height", 720)
+
+    db_game_session = GameSession(game_mode="solo")
+    db.add(db_game_session)
+    db.commit()
+    db.refresh(db_game_session)
+
+    gsp = GameSessionPlayer(
+        session_id=db_game_session.id,
+        player_id = profile.id,
+        is_host = True,
+        is_ready = True,
+    )
+    db.add(gsp)
+    db.commit()
+
+    if session_id not in active_sessions:
+        game_session = AsteroidGameSession(
+            session_id, mode="solo",
+            canvas_width=canvas_width, canvas_height=canvas_height
+        )
+        active_sessions[session_id] = game_session
+        active_connections[session_id] = []
+
+        async def on_tick(world_state):
+            await broadcast_to_room(session_id, {"type": "game_state", "data": world_state})
+
+        game_session.broadcast_callback = on_tick
+        asyncio.create_task(game_session.start())
+    else:
+        game_session = active_sessions[session_id]
+
+    active_connections[session_id].append(websocket)
+
+    player_id = f"solo_{uuid.uuid4().hex[:8]}"
+    game_session.add_player(player_id)
+    game_session.register_player_db_id(player_id, profile.id)  
+
+    await websocket.send_json({
+        "type": "connection",
+        "player_id": player_id,
+        "username": username,
+        "canvas_width": game_session.CANVAS_WIDTH,
+        "canvas_height": game_session.CANVAS_HEIGHT,
+        "mode": "solo",
+    })
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+
+            if message["type"] == "player_update":
+                game_session.update_player_state(player_id, message["data"])
+
+            elif message["type"] == "difficulty_update":
+                game_session.update_difficulty(
+                    message["data"]["difficulty"],
+                    message["data"]["spawnInterval"],
+                )
+
+            elif message["type"] == "game_over":
+                break
+
+    except WebSocketDisconnect:
+        pass
+
+    finally:
+
+        try:
+            await game_session.save_session_to_db(db_game_session.id, db)
+        except Exception as e:
+            print(f"[SOLO] Failed to save session: {e}")
+
+        active_connections[session_id].remove(websocket)
+        game_session.remove_player(player_id)
+
+        if len(game_session.players) == 0:
+            game_session.stop()
+            active_sessions.pop(session_id, None)
+            active_connections.pop(session_id, None)
+
+        db.close()
+
+@router.websocket("/ws/multiplayer/{invite_code}")
+async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str):
+    await websocket.accept()
+
+    user_data = await get_user_from_websocket(websocket)
+    if not user_data:
+        await websocket.send_json({"type": "error", "message": "Unauthorized"})
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
+    user_id = user_data["user_id"]
+    db = next(get_session())
+
     lobby_repo = LobbyRepository(db)
     lobby = lobby_repo.get_by_invite_code(invite_code)
-    
+
     if not lobby:
         await websocket.send_json({"type": "error", "message": "Lobby not found"})
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
-    
+
     if user_id != lobby.creator_id and user_id != lobby.invited_user_id:
         await websocket.send_json({"type": "error", "message": "Access denied"})
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
-    
+
     if user_id == lobby.creator_id:
         if lobby.status not in ["waiting", "ready", "playing"]:
             await websocket.send_json({"type": "error", "message": f"Lobby is {lobby.status}"})
@@ -166,80 +205,100 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             await websocket.send_json({"type": "error", "message": f"Lobby is {lobby.status}, please wait..."})
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
-    
+
     try:
         init_data = await websocket.receive_text()
         init_message = json.loads(init_data)
     except Exception:
         await websocket.close(code=status.WS_1011_SERVER_ERROR)
         return
-    
-    canvas_width = init_message.get("canvas_width", 1280)
+
+    canvas_width  = init_message.get("canvas_width",  1280)
     canvas_height = init_message.get("canvas_height", 720)
-    
     session_id = f"mp_{invite_code}"
-    
+
+    profile = db.exec(
+        select(PlayerProfile).where(PlayerProfile.user_id == user_id)
+    ).first()
+
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
+    username = user.username if user else "Unknown"
+
     if session_id not in active_sessions:
-        session = AsteroidGameSession(session_id, mode="multiplayer", canvas_width=canvas_width, canvas_height=canvas_height)
-        active_sessions[session_id] = session
+        game_session = AsteroidGameSession(
+            session_id, mode="multiplayer",
+            canvas_width=canvas_width, canvas_height=canvas_height
+        )
+
+        active_sessions[session_id] = game_session
         active_connections[session_id] = []
         player_user_mapping[session_id] = {}
-        
+        player_info[session_id] = {}
+
+        db_game_session = GameSession(game_mode="coop")
+        db.add(db_game_session)
+        db.commit()
+        db.refresh(db_game_session)
+
+        game_session._db_session_id = db_game_session.id
+
         async def on_tick(world_state):
-            await broadcast_to_room(session_id, {
-                "type": "game_state",
-                "data": world_state,
-            })
-        
-        session.broadcast_callback = on_tick
-        
-        asyncio.create_task(session.start())
-        
+            await broadcast_to_room(session_id, {"type": "game_state", "data": world_state})
+
+        game_session.broadcast_callback = on_tick
+        asyncio.create_task(game_session.start())
+
         lobby.status = "playing"
-        from datetime import datetime, timezone
         lobby.started_at = datetime.now(timezone.utc)
         lobby_repo.update(lobby)
     else:
-        session = active_sessions[session_id]
-    
+        game_session = active_sessions[session_id]
+
+    db_session_id = game_session._db_session_id
+
+    existing_gsp = db.exec(
+        select(GameSessionPlayer)
+        .where(GameSessionPlayer.session_id == db_session_id)
+        .where(GameSessionPlayer.player_id == profile.id)
+    ).first()
+
+    if not existing_gsp and profile:
+        is_host = (user_id == lobby.creator_id)
+        gsp = GameSessionPlayer(
+            session_id=db_session_id,
+            player_id=profile.id,
+            is_host=is_host,
+            is_ready=True,
+        )
+        db.add(gsp)
+        db.commit()
+
     active_connections[session_id].append(websocket)
-    
+
     if user_id == lobby.creator_id:
         player_id = f"player_creator_{user_id}"
     else:
         player_id = f"player_invited_{user_id}"
-    
+
+
     player_user_mapping[session_id][player_id] = user_id
-    
-    user_repo = UserRepository(db)
-    user = user_repo.get_by_id(user_id)
-    username = user.username if user else "Unknown"
-    
-    if session_id not in player_info:
-        player_info[session_id] = {}
-    player_info[session_id][player_id] = {
+    player_info[session_id][player_id] = {"username": username, "user_id": user_id}
+
+    game_session.add_player(player_id)
+    if profile:
+        game_session.register_player_db_id(player_id, profile.id)
+
+    await websocket.send_json({
+        "type": "connection",
+        "player_id": player_id,
+        "user_id": user_id,
         "username": username,
-        "user_id": user_id
-    }
-    
-    session.add_player(player_id)
-    
-    try:
-        await websocket.send_json({
-            "type": "connection",
-            "player_id": player_id,
-            "user_id": user_id,
-            "username": username,
-            "canvas_width": session.CANVAS_WIDTH,
-            "canvas_height": session.CANVAS_HEIGHT,
-            "mode": "multiplayer",
-        })
-        print(f"[WS] Sent connection confirmation to {player_id}")
-    except Exception as e:
-        print(f"[WS] Failed to send connection confirmation: {e}")
-        await websocket.close(code=status.WS_1011_SERVER_ERROR)
-        return
-    
+        "canvas_width": game_session.CANVAS_WIDTH,
+        "canvas_height": game_session.CANVAS_HEIGHT,
+        "mode": "multiplayer",
+    })
+
     other_players_info = {}
     for pid, pinfo in player_info[session_id].items():
         if pid != player_id:
@@ -256,41 +315,47 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             print(f"[WS] Notified other players about {player_id}")
         except Exception as e:
             print(f"[WS] Failed to notify other players: {e}")
-    
+
     try:
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
-            
+
             if message["type"] == "player_update":
-                session.update_player_state(player_id, message["data"])
-            
+                game_session.update_player_state(player_id, message["data"])
+
+            elif message["type"] == "difficulty_update":
+                game_session.update_difficulty(
+                    message["data"]["difficulty"],
+                    message["data"]["spawnInterval"],
+                )
+
             elif message["type"] == "game_over":
-                pass
-    
+                break
+
     except WebSocketDisconnect:
-        if session_id in active_connections and websocket in active_connections[session_id]:
-            active_connections[session_id].remove(websocket)
-        
-        if session_id in active_sessions:
-            session.remove_player(player_id)
-            
-            if session_id in player_info and player_id in player_info[session_id]:
-                del player_info[session_id][player_id]
-            
-            if len(session.players) == 0:
-                session.stop()
-                del active_sessions[session_id]
-                del active_connections[session_id]
-                del player_user_mapping[session_id]
-                if session_id in player_info:
-                    del player_info[session_id]
-                
-                lobby.status = "completed"
-                from datetime import datetime, timezone
-                lobby.ended_at = datetime.now(timezone.utc)
-                lobby_repo.update(lobby)
-    
-    except Exception as e:
-        print(f"WebSocket error in {session_id}: {e}")
-        await websocket.close(code=status.WS_1011_SERVER_ERROR)
+        pass
+
+    finally:
+        active_connections[session_id].remove(websocket)
+        game_session.remove_player(player_id)
+        player_info[session_id].pop(player_id, None)
+
+        if len(game_session.players) == 0:
+            game_session.stop()
+
+            try:
+                await game_session.save_session_to_db(db_session_id, db)
+            except Exception as e:
+                print(f"[MP] Failed to save session: {e}")
+
+            active_sessions.pop(session_id, None)
+            active_connections.pop(session_id, None)
+            player_user_mapping.pop(session_id, None)
+            player_info.pop(session_id, None)
+
+            lobby.status = "completed"
+            lobby.ended_at = datetime.now(timezone.utc)
+            lobby_repo.update(lobby)
+
+        db.close()
