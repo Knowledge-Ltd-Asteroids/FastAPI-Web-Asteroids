@@ -11,57 +11,84 @@ cli = typer.Typer()
 
 @cli.command()
 def initialize():
-    with get_cli_session() as db: # Get a connection to the database
-        drop_all() # delete all tables
-        create_db_and_tables() #recreate all tables
+    with get_cli_session() as db:
+        drop_all()
+        create_db_and_tables()
 
         password = encrypt_password("password")
         
         users = [
-            User(username="bob", email="bob@mail.com", password=password, role="regular_user"),
-            User(username="alice", email="alice@mail.com", password=password, role="regular_user"),
-            User(username="admin", email="admin@mail.com", password=password, role="admin"),
+            User(username="bob", email="bob@mail.com", password=password, role="user"),
+            User(username="alice", email="alice@mail.com", password=password, role="user"),
         ]
         for user in users:
             db.add(user)
         db.commit()
         
-        profiles = [
-            PlayerProfile(user_id=1, highest_solo_score=12500, 
-                         solo_games_played=15, asteroids_destroyed=342, currency=1500),
-            PlayerProfile(user_id=2, highest_solo_score=8900, 
-                         solo_games_played=8, asteroids_destroyed=156, currency=750),
-            PlayerProfile(user_id=3, highest_solo_score=50000, 
-                         solo_games_played=42, asteroids_destroyed=1200, currency=9999),
+        # Create player profiles with currency
+        player_profiles = [
+            PlayerProfile(user_id=1, currency=2000),
+            PlayerProfile(user_id=2, currency=1500),
         ]
-        for profile in profiles:
+        for profile in player_profiles:
             db.add(profile)
         db.commit()
-
         
-        ships = [
-            Ship(name="ship1", description="Ship1 description", 
-                 price=0, sprite="ship1.png", is_default=True),
-            Ship(name="ship2", description="Ship2 description", 
-                 price=500, sprite="ship2.png"),
-            Ship(name="ship3", description="Ship 3 description", 
-                 price=1000, sprite="ship3.png"),
+        cosmetic_ships = [
+            CosmeticShip(
+                name="Classic Arrow",
+                description="The original classic spaceship design",
+                price=0,
+                sprite="classic_arrow.png",
+                is_default=True
+            ),
+            CosmeticShip(
+                name="Plasma Dart",
+                description="A sleek blue spacecraft with plasma energy",
+                price=500,
+                sprite="plasma_dart.png",
+                is_default=False
+            ),
+            CosmeticShip(
+                name="Neon Viper",
+                description="Neon green serpentine ship with sharp angles",
+                price=750,
+                sprite="neon_viper.png",
+                is_default=False
+            ),
+            CosmeticShip(
+                name="Golden Phoenix",
+                description="Majestic gold ship with phoenix-like wings",
+                price=1000,
+                sprite="golden_phoenix.png",
+                is_default=False
+            ),
+            CosmeticShip(
+                name="Obsidian Shadow",
+                description="Dark obsidian ship that seems to absorb light",
+                price=1200,
+                sprite="obsidian_shadow.png",
+                is_default=False
+            ),
         ]
-        for ship in ships:
+
+        for ship in cosmetic_ships:
             db.add(ship)
         db.commit()
         
-        player_ships = [
-            PlayerShip(player_id=1, ship_id=1, equipped=False),
-            PlayerShip(player_id=1, ship_id=2, equipped=True),
-            PlayerShip(player_id=1, ship_id=3, equipped=False),
-            PlayerShip(player_id=2, ship_id=1, equipped=True),
-            PlayerShip(player_id=3, ship_id=1, equipped=False),
-            PlayerShip(player_id=3, ship_id=2, equipped=False),
-            PlayerShip(player_id=3, ship_id=3, equipped=True),
+        owned_ships = [
+            # Bob's ships (player_id=1)
+            OwnedShip(player_id=1, cosmetic_ship_id=1),  # Classic Arrow (free)
+            OwnedShip(player_id=1, cosmetic_ship_id=2),  # Plasma Dart
+            OwnedShip(player_id=1, cosmetic_ship_id=3),  # Neon Viper
+
+            # Alice's ships (player_id=2)
+            OwnedShip(player_id=2, cosmetic_ship_id=1),  # Classic Arrow (free)
+            OwnedShip(player_id=2, cosmetic_ship_id=4),  # Golden Phoenix
         ]
-        for ps in player_ships:
-            db.add(ps)
+
+        for owned_ship in owned_ships:
+            db.add(owned_ship)
         db.commit()
 
         print("Database Initialized")

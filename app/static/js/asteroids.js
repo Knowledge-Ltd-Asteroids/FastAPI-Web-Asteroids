@@ -7,7 +7,21 @@ canvas.height = window.innerHeight;
 c.fillStyle = "black";
 c.fillRect(0, 0, canvas.width, canvas.height);
 
-//Creating a spaceship
+let gameMode = "solo";
+let gameState = {
+    asteroids: [],
+    players: {},
+    playerLives: 3,
+    playerScore: 0,
+};
+
+let playerId = null;
+let playerName = null;
+let opponentData = null;
+let opponentName = null;
+let ws = null;
+let isGameOver = false;
+
 class SpaceShip {
     constructor({ position, velocity }) {
         this.position = position;
@@ -16,8 +30,6 @@ class SpaceShip {
     }
 
     draw() {
-
-        // Rotates the ship 
         c.save();
         c.translate(this.position.x, this.position.y);
         c.rotate(this.rotation);
@@ -33,15 +45,17 @@ class SpaceShip {
         c.restore();
     }
 
-    // Update spaceship position every frame
     update() {
         this.draw();
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
 
+        if (this.position.x > canvas.width) { this.position.x = 0; }
+        if (this.position.x < 0) { this.position.x = canvas.width; }
+        if (this.position.y > canvas.height) { this.position.y = 0; }
+        if (this.position.y < 0) { this.position.y = canvas.height; }
     }
 
-    // Get the vertices of ship at any rotation and store them in an array
     getVertices() {
         const cos = Math.cos(this.rotation);
         const sin = Math.sin(this.rotation);
@@ -59,7 +73,37 @@ class SpaceShip {
                 x: this.position.x + cos * -10 - sin * -10,
                 y: this.position.y + sin * -10 + cos * -10,
             },
-        ]
+        ];
+    }
+}
+
+class OpponentShip {
+    constructor({ position, rotation }) {
+        this.position = position;
+        this.rotation = rotation;
+    }
+
+    draw(color = "#E1B100") {
+        c.save();
+        c.translate(this.position.x, this.position.y);
+        c.rotate(this.rotation);
+        c.translate(-this.position.x, -this.position.y);
+
+        c.beginPath();
+        c.moveTo(this.position.x + 30, this.position.y);
+        c.lineTo(this.position.x - 10, this.position.y - 10);
+        c.lineTo(this.position.x - 10, this.position.y + 10);
+        c.closePath();
+        c.strokeStyle = color;
+        c.lineWidth = 2;
+        c.stroke();
+        c.restore();
+    }
+
+    update(data) {
+        this.position = data.position;
+        this.rotation = data.rotation;
+        this.draw();
     }
 }
 
@@ -68,7 +112,9 @@ class Projectiles {
         this.position = position;
         this.velocity = velocity;
         this.radius = 5;
+        this.id = crypto.randomUUID();
     }
+
     draw() {
         c.beginPath();
         c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2, false);
@@ -84,29 +130,9 @@ class Projectiles {
     }
 }
 
-const spaceship = new SpaceShip({
-
-    position: { x: canvas.width / 2, y: canvas.height / 2 },
-    velocity: { x: 0, y: 0 },
-
-});
-
-const keys = {
-    w: {
-        pressed: false
-    },
-    a: {
-        pressed: false
-    },
-    d: {
-        pressed: false
-    },
-};
-
-
-//Creating asteroids
 class Asteroid {
-    constructor({ position, velocity, radius }) {
+    constructor({ id, position, velocity, radius }) {
+        this.id = id;
         this.position = position;
         this.velocity = velocity;
         this.radius = radius;
@@ -122,30 +148,26 @@ class Asteroid {
 
     update() {
         this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
     }
 }
 
 function circleCollide(circle1, circle2) {
     const xDist = circle2.position.x - circle1.position.x;
     const yDist = circle2.position.y - circle1.position.y;
-
     const distance = Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
-
-    if (distance <= circle1.radius + circle2.radius) {
-        return true;
-    }
-
-    else {
-        return false;
-    }
-
+    return distance <= circle1.radius + circle2.radius;
 }
 
-// Checks collision between a circle (asteroid) and a triangle (spaceship)
-function circleTriangleCollision(circle, triangle) {
+function isPointOnLineSegment(x, y, begin, end) {
+    return (
+        x >= Math.min(begin.x, end.x) &&
+        x <= Math.max(begin.x, end.x) &&
+        y >= Math.min(begin.y, end.y) &&
+        y <= Math.max(begin.y, end.y)
+    );
+}
 
+function circleTriangleCollision(circle, triangle) {
     for (let i = 0; i < 3; i++) {
         let begin = triangle[i];
         let end = triangle[(i + 1) % 3];
@@ -164,127 +186,36 @@ function circleTriangleCollision(circle, triangle) {
             closestY = closestY < begin.y ? begin.y : end.y;
         }
 
-        // Calculate distance from circle center to closest point
         dx = closestX - circle.position.x;
         dy = closestY - circle.position.y;
-
         let distance = Math.sqrt(dx * dx + dy * dy);
 
-        // If distance is less than or equal to radius collision happens
         if (distance <= circle.radius) {
             return true;
         }
     }
+    return false;
 }
 
-// Checks if a point (x, y) lies within a given line segment
-function isPointOnLineSegment(x, y, begin, end) {
+const spaceship = new SpaceShip({
+    position: { x: canvas.width / 2, y: canvas.height / 2 },
+    velocity: { x: 0, y: 0 },
+});
 
-    return (
-        x >= Math.min(begin.x, end.x) &&
-        x <= Math.max(begin.x, end.x) &&
-        y >= Math.min(begin.y, end.y) &&
-        y <= Math.max(begin.y, end.y)
-    )
-}
+const keys = {
+    w: { pressed: false },
+    a: { pressed: false },
+    d: { pressed: false },
+};
+
+const projectiles = [];
+let animationID = null;
 
 const Spaceship_Speed = 4;
 const Rotate_Speed = 0.05;
 const Projectile_Speed = 10;
 const Friction = 0.95;
 
-// Animate Asteroids and spaceship
-function animate() {
-    const animationID = window.requestAnimationFrame(animate);
-    c.fillStyle = "black";
-    c.fillRect(0, 0, canvas.width, canvas.height);
-
-    spaceship.update();
-
-    if (spaceship.position.x > canvas.width) {
-        spaceship.position.x = 0;
-    }
-    if (spaceship.position.x < 0) {
-        spaceship.position.x = canvas.width;
-    }
-    if (spaceship.position.y > canvas.height) {
-        spaceship.position.y = 0;
-    }
-    if (spaceship.position.y < 0) {
-        spaceship.position.y = canvas.height;
-    }
-
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-        const projectile = projectiles[i];
-        projectile.update();
-
-        // Remove projectiles that are off screen
-        if (
-            projectile.position.x + projectile.radius < 0 ||
-            projectile.position.x - projectile.radius > canvas.width ||
-            projectile.position.y - projectile.radius > canvas.height ||
-            projectile.position.y + projectile.radius < 0) {
-            projectiles.splice(i, 1);
-        }
-    }
-
-    if (keys.w.pressed) {
-
-        spaceship.velocity.x = Math.cos(spaceship.rotation) * Spaceship_Speed;
-        spaceship.velocity.y = Math.sin(spaceship.rotation) * Spaceship_Speed;
-    }
-    else if (!keys.w.pressed) {
-        spaceship.velocity.x *= Friction;
-        spaceship.velocity.y *= Friction;
-    }
-
-    if (keys.a.pressed) {
-        spaceship.rotation -= Rotate_Speed;
-    }
-
-    else if (keys.d.pressed) {
-        spaceship.rotation += Rotate_Speed;
-    }
-
-    // Update and draw asteroids
-    for (let i = asteroids.length - 1; i >= 0; i--) {
-
-        const asteroid = asteroids[i];
-        asteroid.update();
-
-        if (circleTriangleCollision(asteroid, spaceship.getVertices())) {
-            console.log("Game Over");
-            window.cancelAnimationFrame(animationID);
-            clearInterval(intervalID);
-        }
-
-        // Remove asteroids that are off screen
-        if (
-            asteroid.position.x + asteroid.radius < 0 ||
-            asteroid.position.x - asteroid.radius > canvas.width ||
-            asteroid.position.y + asteroid.radius < 0 ||
-            asteroid.position.y - asteroid.radius > canvas.height) {
-            asteroids.splice(i, 1);
-        }
-
-        // For projectiles colliding with asteroids
-        for (let j = projectiles.length - 1; j >= 0; j--) {
-            const projectile = projectiles[j];
-
-            if (circleCollide(projectile, asteroid)) {
-
-                // Remove asteroid and projectile
-                asteroids.splice(i, 1);
-                projectiles.splice(j, 1);
-
-                break;
-            }
-
-        }
-    }
-}
-
-// Movement keys
 window.addEventListener("keydown", (event) => {
     switch (event.code) {
         case "KeyW":
@@ -297,16 +228,19 @@ window.addEventListener("keydown", (event) => {
             keys.d.pressed = true;
             break;
         case "Space":
-            projectiles.push(new Projectiles({
-                position: {
-                    x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
-                    y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
-                },
-                velocity: {
-                    x: Math.cos(spaceship.rotation) * Projectile_Speed,
-                    y: Math.sin(spaceship.rotation) * Projectile_Speed,
-                }
-            }))
+            projectiles.push(
+                new Projectiles({
+                    position: {
+                        x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
+                        y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
+                    },
+                    velocity: {
+                        x: Math.cos(spaceship.rotation) * Projectile_Speed,
+                        y: Math.sin(spaceship.rotation) * Projectile_Speed,
+                    },
+                })
+            );
+            break;
     }
 });
 
@@ -324,68 +258,278 @@ window.addEventListener("keyup", (event) => {
     }
 });
 
-const projectiles = [];
-const asteroids = [];
+function animate() {
+    animationID = window.requestAnimationFrame(animate);
 
-animate();
+    c.fillStyle = "black";
+    c.fillRect(0, 0, canvas.width, canvas.height);
 
-const intervalID = window.setInterval(() => {
+    spaceship.update();
 
-    const index = Math.floor(Math.random() * 4);
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const projectile = projectiles[i];
+        projectile.update();
 
-    let x, y;
-    let vx, vy;
-    let radius = 50 * Math.random() + 10;
-
-    switch (index) {
-
-        case 0: // left
-            x = 0 - radius;
-            y = Math.random() * canvas.height;
-            vx = 1;
-            vy = 0;
-            break;
-
-        case 1: // bottom
-            x = Math.random() * canvas.width;
-            y = canvas.height + radius;
-            vx = 0;
-            vy = -1;
-            break;
-
-        case 2: // right
-            x = canvas.width + radius;
-            y = Math.random() * canvas.height;
-            vx = -1;
-            vy = 0;
-            break;
-
-        case 3: // top
-            x = Math.random() * canvas.width;
-            y = 0 - radius;
-            vx = 0;
-            vy = 1;
-            break;
+        if (
+            projectile.position.x + projectile.radius < 0 ||
+            projectile.position.x - projectile.radius > canvas.width ||
+            projectile.position.y - projectile.radius > canvas.height ||
+            projectile.position.y + projectile.radius < 0
+        ) {
+            projectiles.splice(i, 1);
+        }
     }
 
-    const Asteriod_Speed = Math.random() * 2 + 1;
-    vx *= Asteriod_Speed;
-    vy *= Asteriod_Speed;
+    for (let i = gameState.asteroids.length - 1; i >= 0; i--) {
+        const asteroidData = gameState.asteroids[i];
+        const asteroid = new Asteroid(asteroidData);
+        asteroid.update();
+    }
 
-    asteroids.push(new Asteroid({
-        position: {
-            x: x,
-            y: y,
+    if (gameMode === "multiplayer" && opponentData) {
+        const opponent = new OpponentShip(opponentData);
+        opponent.draw("#E1B100");
+    }
+
+    if (keys.w.pressed) {
+        spaceship.velocity.x = Math.cos(spaceship.rotation) * Spaceship_Speed;
+        spaceship.velocity.y = Math.sin(spaceship.rotation) * Spaceship_Speed;
+    } else if (!keys.w.pressed) {
+        spaceship.velocity.x *= Friction;
+        spaceship.velocity.y *= Friction;
+    }
+
+    if (keys.a.pressed) {
+        spaceship.rotation -= Rotate_Speed;
+    } else if (keys.d.pressed) {
+        spaceship.rotation += Rotate_Speed;
+    }
+
+    renderStats();
+    sendPlayerState();
+}
+
+function renderStats() {
+    if (gameMode === "solo") {
+        c.fillStyle = "white";
+        c.font = "20px Arial";
+        c.fillText(`Lives: ${gameState.playerLives}`, 20, 30);
+        c.fillText(`Score: ${gameState.playerScore}`, 20, 60);
+        
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            c.fillStyle = "red";
+            c.fillText("DISCONNECTED", canvas.width - 200, 30);
+        }
+    } else {
+        const playerIds = Object.keys(gameState.players);
+        
+        let selfData = gameState.players[playerId];
+        let opponentId = playerIds.find(pid => pid !== playerId);
+        let opponentPlayerData = opponentId ? gameState.players[opponentId] : null;
+        
+        if (selfData) {
+            document.getElementById("p1-name").textContent = playerName || "Player 1";
+            document.getElementById("p1-score").textContent = selfData.score;
+            document.getElementById("p1-lives").textContent = selfData.lives;
+            gameState.playerLives = selfData.lives;
+            gameState.playerScore = selfData.score;
+        }
+        
+        if (opponentPlayerData) {
+            document.getElementById("p2-name").textContent = opponentName || "Player 2";
+            document.getElementById("p2-score").textContent = opponentPlayerData.score;
+            document.getElementById("p2-lives").textContent = opponentPlayerData.lives;
+            
+            opponentData = {
+                position: opponentPlayerData.position,
+                rotation: opponentPlayerData.rotation
+            };
+        }
+        
+        const statusEl = document.getElementById("connection-status");
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            statusEl.textContent = "Connected";
+            statusEl.className = "connection-status connected";
+        } else {
+            statusEl.textContent = "Disconnected";
+            statusEl.className = "connection-status disconnected";
+        }
+    }
+}
+
+function initializeWebSocket() {
+    const isMultiplayer = window.location.pathname.includes("/multiplayer/");
+    let wsUrl;
+
+    if (isMultiplayer) {
+        const pathSegments = window.location.pathname.split("/");
+        const inviteCode = pathSegments[pathSegments.length - 1];
+        gameMode = "multiplayer";
+        
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        wsUrl = `${protocol}//${window.location.host}/ws/multiplayer/${inviteCode}`;
+    } else {
+        const sessionId = "solo_" + Date.now();
+        gameMode = "solo";
+        
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        wsUrl = `${protocol}//${window.location.host}/ws/solo/${sessionId}`;
+    }
+
+    console.log(`[${gameMode.toUpperCase()}] Connecting to: ${wsUrl}`);
+
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+        console.log(`[${gameMode.toUpperCase()}] WebSocket connected`);
+        
+        ws.send(JSON.stringify({
+            canvas_width: canvas.width,
+            canvas_height: canvas.height,
+        }));
+        
+        animate();
+    };
+
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+
+        if (message.type === "connection") {
+            playerId = message.player_id;
+            playerName = message.username || "Unknown";
+            console.log(`Player ID: ${playerId} (${playerName})`);
+            console.log(`Mode: ${message.mode || 'unknown'}`);
+            if (message.mode === "multiplayer") {
+                gameMode = "multiplayer";
+            }
+        }
+
+        if (message.type === "player_joined") {
+            console.log(`Player joined: ${message.username}`);
+            
+            if (message.player_id !== playerId) {
+                opponentName = message.username;
+                console.log(`Opponent: ${opponentName}`);
+            }
+            
+            if (message.other_players) {
+                for (const [pId, pInfo] of Object.entries(message.other_players)) {
+                    if (pId !== playerId) {
+                        opponentName = pInfo.username;
+                    }
+                }
+            }
+        }
+
+        if (message.type === "game_state") {
+            const data = message.data;
+
+            gameState.asteroids = data.asteroids.map((ast) => ({
+                id: ast.id,
+                position: ast.position,
+                velocity: ast.velocity,
+                radius: ast.radius,
+            }));
+
+            gameState.players = {};
+            for (const [pId, playerData] of Object.entries(data.players)) {
+                gameState.players[pId] = {
+                    position: playerData.position,
+                    rotation: playerData.rotation,
+                    lives: playerData.lives,
+                    score: playerData.score
+                };
+            }
+
+            const selfData = gameState.players[playerId];
+            if (selfData) {
+                gameState.playerLives = selfData.lives;
+                gameState.playerScore = selfData.score;
+            }
+
+            if (data.collisions && data.collisions.length > 0) {
+                data.collisions.forEach((collision) => {
+                    if (collision.type === "asteroid_destroyed") {
+                        console.log(`Asteroid destroyed! Score: +${collision.score_gained}`);
+                        projectiles.length = 0;
+                    } else if (collision.type === "ship_hit") {
+                        console.log("Ship hit! Lives decreased");
+                    }
+                });
+            }
+
+            if (gameMode === "multiplayer") {
+                const allPlayers = Object.values(gameState.players || {});
+                const anyPlayerDead = allPlayers.some(p => p.lives <= 0);
+                if (anyPlayerDead) {
+                    console.log(`[${gameMode.toUpperCase()}] A player reached 0 lives. Game Over!`);
+                    endGame();
+                }
+            } else {
+                if (selfData && selfData.lives <= 0) {
+                    console.log(`[${gameMode.toUpperCase()}] Game Over!`);
+                    endGame();
+                }
+            }
+        }
+    };
+
+    ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+        console.log("WebSocket disconnected");
+        if (animationID) {
+            cancelAnimationFrame(animationID);
+        }
+    };
+}
+
+function sendPlayerState() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return;
+    }
+
+    const playerState = {
+        type: "player_update",
+        data: {
+            position: spaceship.position,
+            rotation: spaceship.rotation,
+            velocity: spaceship.velocity,
+            projectiles: projectiles.map((p) => ({
+                id: p.id,
+                position: p.position,
+                velocity: p.velocity,
+                radius: p.radius,
+            })),
         },
-        velocity: {
+    };
 
-            x: vx,
-            y: vy,
+    ws.send(JSON.stringify(playerState));
+}
 
-        },
-        radius,
-    })
-    );
+function endGame() {
+    console.log("Game Over!");
+    if (animationID) {
+        cancelAnimationFrame(animationID);
+    }
 
-}, 3000);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "game_over" }));
+        ws.close();
+    }
+
+    // Display game over screen
+    c.fillStyle = "rgba(0, 0, 0, 0.7)";
+    c.fillRect(0, 0, canvas.width, canvas.height);
+    c.fillStyle = "white";
+    c.font = "60px Arial";
+    c.textAlign = "center";
+    c.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+    c.font = "30px Arial";
+    c.fillText(`Final Score: ${gameState.playerScore}`, canvas.width / 2, canvas.height / 2 + 60);
+}
+
+initializeWebSocket();
 

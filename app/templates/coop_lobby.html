@@ -1,0 +1,313 @@
+{% extends "authenticated-base.html" %}
+{% block title %}CO-OP Lobby{% endblock %}
+
+{% block internal_css %}
+<style>
+    .coop-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px);
+        padding: 2rem;
+    }
+
+    .coop-card {
+        background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 69, 0, 0.1));
+        border: 3px solid var(--gold);
+        border-radius: 1rem;
+        padding: 3rem;
+        max-width: 500px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
+    }
+
+    .coop-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .coop-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .coop-status {
+        color: var(--light);
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .invite-section {
+        background: rgba(28, 30, 38, 0.6);
+        border: 2px dashed var(--gold);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .invite-label {
+        color: var(--slate);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .invite-code-container {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .invite-code {
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--coral);
+        font-family: 'Courier New', monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding: 1rem;
+        border: 2px solid var(--coral);
+        border-radius: 0.5rem;
+        flex: 1;
+        text-align: center;
+        letter-spacing: 2px;
+    }
+
+    .copy-btn {
+        background: var(--gold);
+        color: var(--dark);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-family: var(--font-pixel);
+        font-size: 0.9rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+    }
+
+    .copy-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px var(--gold);
+    }
+
+    .copy-btn.copied {
+        background: var(--coral);
+    }
+
+    .waiting-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 2rem 0;
+    }
+
+    .waiting-dot {
+        width: 12px;
+        height: 12px;
+        background: var(--gold);
+        border-radius: 50%;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .waiting-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .waiting-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+    }
+
+    .waiting-text {
+        color: var(--slate);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 1rem;
+        border: 2px solid var(--gold);
+        background: transparent;
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.9rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        border-radius: 0.5rem;
+    }
+
+    .btn:hover {
+        background: var(--gold);
+        color: var(--dark);
+        transform: scale(1.05);
+    }
+
+    .btn-secondary {
+        border-color: var(--slate);
+        color: var(--slate);
+    }
+
+    .btn-secondary:hover {
+        background: var(--slate);
+        color: var(--dark);
+    }
+
+    .instructions {
+        background: rgba(255, 165, 0, 0.1);
+        border-left: 4px solid var(--gold);
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-top: 1.5rem;
+        text-align: left;
+    }
+
+    .instructions-title {
+        color: var(--gold);
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .instructions-text {
+        color: var(--light);
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .instructions-text ol {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+    }
+
+    .instructions-text li {
+        margin: 0.25rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="coop-container">
+    <div class="coop-card">
+        <div class="coop-icon">👥</div>
+        <div class="coop-title">CO-OP LOBBY</div>
+        
+        <div class="coop-status">
+            Waiting for another pilot to join your game...
+        </div>
+
+        <div class="invite-section">
+            <div class="invite-label">Share this code:</div>
+            <div class="invite-code-container">
+                <div class="invite-code" id="invite-code">{{ invite_code }}</div>
+                <button class="copy-btn" onclick="copyInviteCode()">COPY</button>
+            </div>
+        </div>
+
+        <div class="waiting-indicator">
+            <div class="waiting-dot"></div>
+            <div class="waiting-dot"></div>
+            <div class="waiting-dot"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let autoRefreshInterval = null;
+let hasRedirected = false;
+
+function copyInviteCode() {
+    const codeElement = document.getElementById('invite-code');
+    const code = codeElement.textContent;
+    
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✓ COPIED';
+        btn.classList.add('copied');
+        
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy code');
+    });
+}
+
+function checkLobbyStatus() {
+    if (hasRedirected) return;
+    
+    const inviteCode = '{{ invite_code }}';
+    
+    fetch(`/api/lobbies/${inviteCode}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error('API Error:', response.status);
+            throw new Error(`Failed to fetch lobby: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Lobby data:', data);
+        // Check if another player has joined
+        if (data.invited_user && (data.status === 'ready' || data.status === 'playing')) {
+            console.log('Player joined! Redirecting to game...');
+            hasRedirected = true;
+            
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            
+            // Auto-redirect to game
+            window.location.href = `/app/play/multiplayer/${inviteCode}`;
+        } else {
+            console.log('Still waiting... invited_user:', data.invited_user, 'status:', data.status);
+        }
+    })
+    .catch(error => {
+        console.error('Lobby check error:', error);
+    });
+}
+
+// Auto-check every 1 second to detect when other player joins
+console.log('Coop lobby script loaded - starting auto-check...');
+autoRefreshInterval = setInterval(checkLobbyStatus, 1000);
+
+// Immediate check when page loads
+checkLobbyStatus();
+</script>
+{% endblock %}
