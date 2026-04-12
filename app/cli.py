@@ -18,11 +18,20 @@ def initialize():
         password = encrypt_password("password")
         
         users = [
-            User(username="bob", email="bob@mail.com", password=password, currency=2000, role="user"),
-            User(username="alice", email="alice@mail.com", password=password, currency=1500, role="user"),
+            User(username="bob", email="bob@mail.com", password=password, role="user"),
+            User(username="alice", email="alice@mail.com", password=password, role="user"),
         ]
         for user in users:
             db.add(user)
+        db.commit()
+        
+        # Create player profiles with currency
+        player_profiles = [
+            PlayerProfile(user_id=1, currency=2000),
+            PlayerProfile(user_id=2, currency=1500),
+        ]
+        for profile in player_profiles:
+            db.add(profile)
         db.commit()
         
         cosmetic_ships = [
@@ -68,14 +77,14 @@ def initialize():
         db.commit()
         
         owned_ships = [
-            # Bob's ships
-            OwnedShip(user_id=1, cosmetic_ship_id=1),  # Classic Arrow (free)
-            OwnedShip(user_id=1, cosmetic_ship_id=2),  # Plasma Dart
-            OwnedShip(user_id=1, cosmetic_ship_id=3),  # Neon Viper
+            # Bob's ships (player_id=1)
+            OwnedShip(player_id=1, cosmetic_ship_id=1),  # Classic Arrow (free)
+            OwnedShip(player_id=1, cosmetic_ship_id=2),  # Plasma Dart
+            OwnedShip(player_id=1, cosmetic_ship_id=3),  # Neon Viper
 
-            # Alice's ships
-            OwnedShip(user_id=2, cosmetic_ship_id=1),  # Classic Arrow (free)
-            OwnedShip(user_id=2, cosmetic_ship_id=4),  # Golden Phoenix
+            # Alice's ships (player_id=2)
+            OwnedShip(player_id=2, cosmetic_ship_id=1),  # Classic Arrow (free)
+            OwnedShip(player_id=2, cosmetic_ship_id=4),  # Golden Phoenix
         ]
 
         for owned_ship in owned_ships:

@@ -2,7 +2,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .user import User
+    from .player_profile import PlayerProfile
 
 class CosmeticShip(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -18,8 +18,8 @@ class CosmeticShip(SQLModel, table=True):
 class OwnedShip(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    user_id: int = Field(foreign_key="user.id", index=True)
-    user: Optional["User"] = Relationship(back_populates="owned_ships")
+    player_id: int = Field(foreign_key="playerprofile.id", index=True)
+    player: Optional["PlayerProfile"] = Relationship(back_populates="ships")
 
     cosmetic_ship_id: int = Field(foreign_key="cosmeticship.id", index=True)
     cosmetic_ship: Optional["CosmeticShip"] = Relationship(back_populates="owned_by")

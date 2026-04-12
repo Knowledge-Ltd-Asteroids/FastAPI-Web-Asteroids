@@ -1,6 +1,3 @@
-"""
-Lobby management endpoints for multiplayer game invites.
-"""
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from pydantic import BaseModel
