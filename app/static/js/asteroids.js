@@ -471,26 +471,27 @@ function renderStats() {
 }
 
 function initializeWebSocket() {
-    const isMultiplayer = window.location.pathname.includes("/multiplayer/");
+    const tokenMeta = document.querySelector('meta[name="access-token"]');
+    const token = tokenMeta ? tokenMeta.getAttribute("content") : null;
+    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : "";
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     let wsUrl;
+
+    const isMultiplayer = window.location.pathname.includes("/multiplayer/");
 
     if (isMultiplayer) {
         const pathSegments = window.location.pathname.split("/");
         const inviteCode = pathSegments[pathSegments.length - 1];
         gameMode = "multiplayer";
-
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        wsUrl = `${protocol}//${window.location.host}/ws/multiplayer/${inviteCode}`;
+        wsUrl = `${protocol}//${window.location.host}/ws/multiplayer/${inviteCode}${tokenParam}`;
     } else {
         const sessionId = "solo_" + Date.now();
         gameMode = "solo";
-
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        wsUrl = `${protocol}//${window.location.host}/ws/solo/${sessionId}`;
+        wsUrl = `${protocol}//${window.location.host}/ws/solo/${sessionId}${tokenParam}`;
     }
 
-    console.log(`[${gameMode.toUpperCase()}] Connecting to: ${wsUrl}`);
-
+    console.log(`Connecting to WebSocket: ${wsUrl}`);
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

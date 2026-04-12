@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Multiplayer Asteroids{% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <meta name="access-token" content="{{ access_token }}">
+{% endblock %}
+
 {% block internal_css %}
 <style>
     body {

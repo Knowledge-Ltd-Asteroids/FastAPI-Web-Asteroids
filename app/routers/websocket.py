@@ -2,7 +2,7 @@ import asyncio
 import json
 import uuid
 from datetime import datetime, timezone
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status, Query
 from app.services.game_session import AsteroidGameSession
 from app.config import get_settings
 from app.database import get_session
@@ -10,6 +10,7 @@ from app.repositories.lobby import LobbyRepository
 from app.repositories.user import UserRepository
 from app.models import GameSession, GameSessionPlayer, PlayerProfile
 from sqlmodel import select
+from typing import Optional
 import jwt
 
 router = APIRouter(tags=["WebSocket"])
@@ -23,9 +24,19 @@ player_info = {}
 async def get_user_from_websocket(websocket: WebSocket) -> dict | None:
     try:
         token = websocket.cookies.get("access_token")
+
+        if not token:
+            token = websocket.query_params.get("token")
+
         if not token:
             return None
-        payload = jwt.decode(token, get_settings().secret_key, algorithms=[get_settings().jwt_algorithm])
+
+        payload = jwt.decode(
+            token,
+            get_settings().secret_key,
+            algorithms=[get_settings().jwt_algorithm]
+        )
+
         user_id = payload.get("sub")
         return {"user_id": int(user_id)} if user_id else None
     except Exception:
@@ -58,7 +69,11 @@ async def game_broadcaster(session_id: str) -> None:
 
 
 @router.websocket("/ws/solo/{session_id}")
-async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
+async def websocket_solo_endpoint(
+    websocket: WebSocket,
+    session_id: str,
+    token: Optional[str] = Query(default=None)
+):
     await websocket.accept()
 
     user_data = await get_user_from_websocket(websocket)
@@ -170,7 +185,11 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
         db.close()
 
 @router.websocket("/ws/multiplayer/{invite_code}")
-async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str):
+async def websocket_multiplayer_endpoint(
+    websocket: WebSocket,
+    invite_code: str,
+    token: Optional[str] = Query(default=None)
+):
     await websocket.accept()
 
     user_data = await get_user_from_websocket(websocket)

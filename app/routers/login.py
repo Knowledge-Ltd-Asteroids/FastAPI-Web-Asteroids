@@ -1,5 +1,5 @@
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi import Request, status, Form
+from fastapi import Request, status, Form, Response
 from app.dependencies import SessionDep
 from . import router, templates
 from app.services.auth_service import AuthService
@@ -39,3 +39,12 @@ async def login_action_ajax(
         secure=True,
     )
     return response
+
+@router.get("/game")
+async def game_page(request: Request):
+    access_token = request.cookies.get("access_token", "")
+    
+    return templates.TemplateResponse("game.html", {
+        "request": request,
+        "access_token": access_token,
+    })
