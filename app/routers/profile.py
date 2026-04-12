@@ -5,7 +5,7 @@ from app.dependencies.session import SessionDep
 from app.dependencies.auth import AuthDep, IsUserLoggedIn, get_current_user, is_admin
 from . import router, templates
 from app.models import *
-from sqlmodel import select
+from sqlmodel import select, func
 from app.utilities.flash import flash
 from typing import Optional
 from app.repositories import UserRepository
@@ -91,3 +91,21 @@ def update_player_email(
         flash(request, "Invalid email", "danger")
 
     return RedirectResponse(url=request.url_for("user_profile_view"), status_code=status.HTTP_303_SEE_OTHER)
+
+@router.delete("/profile/delete")
+async def delete_profile(
+    request: Request,
+    user: AuthDep,
+    db: SessionDep
+):
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    try:
+        db.delete(user)
+        db.commit()
+        request.session.clear()
+        return {"message": "Your account has been permanently deleted"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while deleting your account")
