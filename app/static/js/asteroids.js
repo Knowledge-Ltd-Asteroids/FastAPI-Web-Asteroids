@@ -44,6 +44,18 @@ class SpaceShip {
         c.closePath();
         c.strokeStyle = "white";
         c.stroke();
+
+        if (keys.w.pressed) {
+            const flameLength = 15 + Math.random() * 10;
+            c.beginPath();
+            c.moveTo(this.position.x - 10, this.position.y - 5); // Top of Truster
+            c.lineTo(this.position.x - 25, this.position.y); // Tip of Truster
+            c.lineTo(this.position.x - 10, this.position.y + 5); // Bottom of Truster
+            c.closePath();
+            c.fillStyle = "orange";
+            c.fill();
+        }
+
         c.restore();
     }
 
@@ -328,6 +340,7 @@ function animate() {
 
                 if (asteroid.radius > 30) {
                     const newRadius = asteroid.radius / 2;
+                    const randomSplit = Math.random() * Math.PI * 2;
 
                     asteroids.push(new Asteroid({
                         position: {
@@ -347,8 +360,8 @@ function animate() {
                             y: asteroid.position.y,
                         },
                         velocity: {
-                            x: -Math.cos(spaceship.rotation) * 2,
-                            y: -Math.sin(spaceship.rotation) * 2,
+                            x: -Math.cos(randomSplit) * 2,
+                            y: -Math.sin(randomSplit) * 2,
                         },
                         radius: newRadius,
                     }));
