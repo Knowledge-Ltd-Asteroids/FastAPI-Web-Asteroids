@@ -92,6 +92,7 @@ def update_player_email(
 
     return RedirectResponse(url=request.url_for("user_profile_view"), status_code=status.HTTP_303_SEE_OTHER)
 
+
 @router.delete("/profile/delete")
 async def delete_profile(
     request: Request,
@@ -101,9 +102,18 @@ async def delete_profile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    #prevent deletion of the last admin account
+    if user.role == "admin":
+        admin_count = db.exec(
+            select(func.count()).select_from(User).where(User.role == "admin")
+        ).one()
+        if admin_count <= 1:
+            raise HTTPException(status_code=403, detail="Cannot delete the last admin account")
+    
     try:
         profile = db.exec(select(PlayerProfile).where(PlayerProfile.user_id == user.id)).first()
-        # Set to null/default values
+        
+        #reset profile to null/default values
         if profile:
             profile.active = False
             profile.highest_solo_score = 0
@@ -115,12 +125,12 @@ async def delete_profile(
             profile.total_seconds_played = 0
             profile.last_played = None
             
+            #delete all owned ships
             for ship in profile.ships:
                 db.delete(ship)
         
-        # Actual user object will be deleted
-        db.delete(user)
-        db.commit()
+        user_repo = UserRepository(db)
+        user_repo.delete_user(user.id)
         
         request.session.clear()
         return {"message": "Your account has been permanently deleted"}

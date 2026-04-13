@@ -66,6 +66,7 @@ def admin_home_view(
             "pagination": pagination,
             "q": q,
             "sort": sort,
+            "limit": limit,
             "total_users": pagination.total_count
         }
     )
