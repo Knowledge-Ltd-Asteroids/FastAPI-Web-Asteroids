@@ -135,3 +135,223 @@ a:hover {
 .btn-close {
     filter: invert(1) !important;
 }
+
+@media (max-width: 768px) {
+    body {
+        padding: max(0px, env(safe-area-inset-left));
+        padding: max(0px, env(safe-area-inset-right));
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    .form-control,
+    .btn {
+        font-size: 16px !important;
+    }
+
+    .btn {
+        padding: 0.75rem 1.25rem !important;
+        min-height: 48px;
+        min-width: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .game-nav {
+        padding: 0.5rem 1rem !important;
+        gap: 0.5rem !important;
+    }
+
+    .nav-left {
+        gap: 1rem !important;
+    }
+
+    .game-logo {
+        font-size: 1.1rem !important;
+    }
+
+    .nav-links {
+        gap: 0.75rem !important;
+    }
+
+    .nav-link {
+        font-size: 0.65rem !important;
+        padding: 0.25rem !important;
+        gap: 0.1rem !important;
+    }
+
+    .nav-right {
+        gap: 0.75rem !important;
+    }
+
+    .credit-display {
+        font-size: 0.75rem !important;
+        gap: 0.25rem !important;
+    }
+
+    .main-content {
+        padding: 1rem !important;
+    }
+
+    .flash-container {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .flash-message {
+        font-size: 0.8rem !important;
+    }
+
+    .form-control {
+        min-height: 44px;
+    }
+
+    .form-control::placeholder {
+        font-size: 14px;
+    }
+}
+
+@media (max-height: 500px) and (orientation: portrait) {
+    .game-nav {
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .nav-left,
+    .nav-right {
+        gap: 0.5rem !important;
+    }
+
+    .game-logo {
+        font-size: 0.9rem !important;
+    }
+
+    .nav-link {
+        font-size: 0.55rem !important;
+    }
+
+    .main-content {
+        padding: 0.75rem !important;
+    }
+}
+
+@media (orientation: landscape) {
+    body {
+        overflow: hidden;
+    }
+
+    #canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        margin: 0;
+        padding: 0;
+    }
+
+    .game-nav,
+    .navbar {
+        display: none;
+    }
+
+    .app-wrapper {
+        min-height: 100vh;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+    }
+
+    .main-content {
+        padding: 0 !important;
+        width: 100%;
+        height: 100%;
+    }
+
+    .game-hud {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        font-size: 0.9rem;
+        z-index: 50;
+    }
+
+    .game-over-screen {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+    }
+}
+
+@media (max-width: 480px) {
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 0.9rem !important;
+    }
+
+    .btn {
+        font-size: 0.7rem !important;
+        padding: 0.6rem 1rem !important;
+    }
+
+    .container,
+    .container-sm,
+    .container-md {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    .form-control {
+        font-size: 16px !important;
+        line-height: 1.5;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+    }
+}
+
+@media (min-width: 769px) {
+    #canvas {
+        max-width: 100%;
+        max-height: 100vh;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    button,
+    .btn,
+    a {
+        transition: all 0.15s ease;
+    }
+
+    button:active,
+    .btn:active,
+    a:active {
+        transform: scale(0.98);
+    }
+
+    a:hover {
+        color: var(--light) !important;
+    }
+
+    .btn-primary:hover {
+        background: transparent !important;
+        color: var(--gold) !important;
+    }
+}
+
+.game-canvas-container,
+#canvas {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: none;
+}

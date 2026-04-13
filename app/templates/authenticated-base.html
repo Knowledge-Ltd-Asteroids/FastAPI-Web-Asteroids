@@ -144,15 +144,16 @@
     }
 
     .flash-container {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-    max-width: 350px;
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+        max-width: 350px;
+        pointer-events: none;
     }
 
     .flash-message {
@@ -166,6 +167,7 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         animation: slideIn 0.2s ease;
         border-left: 3px solid;
+        pointer-events: auto;
     }
 
     @keyframes slideIn {

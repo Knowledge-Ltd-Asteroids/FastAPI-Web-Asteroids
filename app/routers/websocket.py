@@ -206,7 +206,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
     else:
-        if lobby.status not in ["ready", "playing"]:
+        if lobby.status not in ["waiting", "ready", "playing"]:
             await websocket.send_json({"type": "error", "message": f"Lobby is {lobby.status}, please wait..."})
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
