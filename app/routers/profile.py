@@ -102,10 +102,29 @@ async def delete_profile(
         raise HTTPException(status_code=404, detail="User not found")
     
     try:
+        profile = db.exec(select(PlayerProfile).where(PlayerProfile.user_id == user.id)).first()
+        # Set to null/default values
+        if profile:
+            profile.active = False
+            profile.highest_solo_score = 0
+            profile.highest_coop_score = 0
+            profile.solo_games_played = 0
+            profile.coop_games_played = 0
+            profile.asteroids_destroyed = 0
+            profile.currency = 0
+            profile.total_seconds_played = 0
+            profile.last_played = None
+            
+            for ship in profile.ships:
+                db.delete(ship)
+        
+        # Actual user object will be deleted
         db.delete(user)
         db.commit()
+        
         request.session.clear()
         return {"message": "Your account has been permanently deleted"}
+        
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while deleting your account")
+        raise HTTPException(status_code=500, detail=str(e))

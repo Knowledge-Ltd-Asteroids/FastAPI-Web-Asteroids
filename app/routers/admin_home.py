@@ -27,7 +27,8 @@ def admin_home_view(
     #get all user profiles
     profiles = {}
     if user_ids:
-        profile_results = db.exec(select(PlayerProfile).where(PlayerProfile.user_id.in_(user_ids))).all()
+        profile_results = db.exec(select(PlayerProfile).where(PlayerProfile.user_id.in_(user_ids))
+                                  .where(PlayerProfile.active == True)).all()
         profiles = {profile.user_id: profile for profile in profile_results}
         
         profile_ids = [profile.id for profile in profile_results]
@@ -68,7 +69,3 @@ def admin_home_view(
             "total_users": pagination.total_count
         }
     )
-
-# stuff for admin page:
-#     - all users with pagination
-#     - usernames, emails, credits, ships owned, games played, last played, date registered

@@ -22,13 +22,16 @@ async def leaderboard_view(
     title = ""
 
     if filter == "solo_scores":
-        rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.highest_solo_score.desc()).limit(100)).all()
+        rankings = db.exec(select(PlayerProfile).where(PlayerProfile.active==True)
+                           .order_by(PlayerProfile.highest_solo_score.desc()).limit(100)).all()
         lb_title = "SOLO SCORES"
     elif filter == "coop_scores":
-        rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.highest_coop_score.desc()).limit(100)).all()
+        rankings = db.exec(select(PlayerProfile).where(PlayerProfile.active==True)
+                           .order_by(PlayerProfile.highest_coop_score.desc()).limit(100)).all()
         lb_title = "CO-OP SCORES"
     elif filter == "asteroids_destroyed":
-        rankings = db.exec(select(PlayerProfile).order_by(PlayerProfile.asteroids_destroyed.desc()).limit(100)).all()
+        rankings = db.exec(select(PlayerProfile).where(PlayerProfile.active==True)
+                           .order_by(PlayerProfile.asteroids_destroyed.desc()).limit(100)).all()
         lb_title = "ASTEROIDS DESTROYED"
 
     return templates.TemplateResponse(
