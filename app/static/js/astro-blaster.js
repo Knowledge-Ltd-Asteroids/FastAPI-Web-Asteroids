@@ -39,6 +39,11 @@ let isGameOver = false;
 let asteroidsDestroyedCount = 0;
 let gameStartTime = Date.now();
 
+//team stats
+let teamScore = 0;
+let teamAsteroidsDestroyed = 0;
+let gameOverMode = null;
+
 class SpaceShip {
     constructor({ position, velocity }) {
         this.position = position;
@@ -46,6 +51,10 @@ class SpaceShip {
         this.rotation = 0;
         this.sprite = new Image();
         this.sprite.src = '/static/Asteroids Asset Pack/sprites/spaceship/spaceship_thrust.png';
+    }
+
+    setSprite(spriteName) {
+        this.sprite.src = `/static/Asteroids Asset Pack/sprites/spaceship/${spriteName}`;
     }
 
 draw() {
@@ -509,6 +518,14 @@ function initializeWebSocket() {
         if (message.type === "connection") {
             playerId = message.player_id;
             playerName = message.username || "Unknown";
+
+            teamScore = 0;
+            teamAsteroidsDestroyed = 0;
+            
+            if (message.ship_sprite) {
+                spaceship.setSprite(message.ship_sprite);
+                console.log("Equipped ship sprite: ", message.ship_sprite);
+            }
             console.log(`Player ID: ${playerId} (${playerName})`);
             console.log(`Mode: ${message.mode || 'unknown'}`);
             if (message.mode === "multiplayer") {
@@ -559,11 +576,23 @@ function initializeWebSocket() {
                 gameState.playerScore = selfData.score;
             }
 
+            if (gameMode === "multiplayer") {
+                teamScore = 0;
+                for (const player of Object.values(gameState.players)) {
+                    teamScore += player.score || 0;
+                }
+            }
+
             if (data.collisions && data.collisions.length > 0) {
                 data.collisions.forEach((collision) => {
                     if (collision.type === "asteroid_destroyed") {
                         console.log(`Asteroid destroyed! Score: +${collision.score_gained}`);
                         asteroidsDestroyedCount++;
+
+                        if (gameMode === "multiplayer") {
+                            teamAsteroidsDestroyed++;
+                        }
+
                         projectiles.length = 0;
                     } else if (collision.type === "ship_hit") {
                         console.log("Ship hit! Lives decreased");
@@ -634,13 +663,31 @@ function endGame() {
     if (animationID) cancelAnimationFrame(animationID);
     if (ws && ws.readyState === WebSocket.OPEN) ws.close();
     
-    document.getElementById("canvas").style.display = "none";
-    document.getElementById("game-over-screen").style.display = "flex";
+    gameOverMode = gameMode;
     
-    document.getElementById("final-score").textContent = gameState.playerScore;
-    document.getElementById("asteroids-destroyed").textContent = asteroidsDestroyedCount;
-    document.getElementById("time-survived").textContent = formatTime(timeSurvived);
+    if (gameMode === "solo") {
+        // Solo game over
+        document.getElementById("canvas").style.display = "none";
+        document.getElementById("game-over-screen").style.display = "flex";
+        document.getElementById("final-score").textContent = gameState.playerScore;
+        document.getElementById("asteroids-destroyed").textContent = asteroidsDestroyedCount;
+        document.getElementById("time-survived").textContent = formatTime(timeSurvived);
+    } else {
+        // Multiplayer game over
+        document.getElementById("canvas").style.display = "none";
+        document.getElementById("multiplayer-game-over-screen").style.display = "flex";
+        document.getElementById("team-final-score").textContent = teamScore;
+        document.getElementById("team-asteroids-destroyed").textContent = teamAsteroidsDestroyed;
+        document.getElementById("team-time-survived").textContent = formatTime(timeSurvived);
+    }
+}
+
+function playAgain() {
+    window.location.href = "/app/play/coop";
+}
+
+function exitToHome() {
+    window.location.href = "/app";
 }
 
 initializeWebSocket();
-

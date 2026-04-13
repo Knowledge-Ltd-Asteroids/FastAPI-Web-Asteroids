@@ -81,6 +81,14 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
         await websocket.send_json({"type": "error", "message": "Player profile not found"})
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
+    
+    equipped_ship = None
+    for owned in profile.ships:
+        if owned.equipped:
+            equipped_ship = owned.cosmetic_ship
+            break
+
+    ship_sprite = equipped_ship.sprite if equipped_ship else "spaceship_thrust.png"
 
     init_data = await websocket.receive_text()
     init_message = json.loads(init_data)
@@ -135,6 +143,7 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
         "canvas_width": game_session.CANVAS_WIDTH,
         "canvas_height": game_session.CANVAS_HEIGHT,
         "mode": "solo",
+        "ship_sprite": ship_sprite
     })
 
     try:
@@ -295,6 +304,13 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
     if profile:
         game_session.register_player_db_id(player_id, profile_id)
 
+    equipped_ship = None
+    for owned in profile.ships:
+        if owned.equipped:
+            equipped_ship = owned.cosmetic_ship
+            break
+    ship_sprite = equipped_ship.sprite if equipped_ship else "spaceship_thrust.png"
+
     await websocket.send_json({
         "type": "connection",
         "player_id": player_id,
@@ -303,6 +319,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
         "canvas_width": game_session.CANVAS_WIDTH,
         "canvas_height": game_session.CANVAS_HEIGHT,
         "mode": "multiplayer",
+        "ship_sprite": ship_sprite
     })
 
     other_players_info = {}

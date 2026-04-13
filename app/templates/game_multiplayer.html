@@ -95,17 +95,6 @@
         color: var(--gold);
     }
 
-    .center-display {
-        position: fixed;
-        bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        font-family: var(--font-pixel);
-        color: var(--gold);
-        pointer-events: auto;
-    }
-
     .connection-status {
         position: fixed;
         bottom: 1rem;
@@ -116,6 +105,7 @@
         background: rgba(28, 30, 38, 0.8);
         padding: 0.5rem 1rem;
         border: 1px solid var(--slate);
+        pointer-events: none;
     }
 
     .connection-status.connected {
@@ -128,59 +118,78 @@
         border-color: var(--coral);
     }
 
-    .game-over-modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(28, 30, 38, 0.95);
-        border: 3px solid var(--gold);
-        padding: 2rem;
-        text-align: center;
-        z-index: 200;
+    /* Game Over Summary Screen */
+    #multiplayer-game-over-screen {
         display: none;
-        backdrop-filter: blur(4px);
-    }
-
-    .game-over-modal.show {
-        display: block;
-    }
-
-    .game-over-title {
-        font-family: var(--font-pixel);
-        color: var(--gold);
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .game-over-content {
-        font-family: system-ui, sans-serif;
-        color: var(--light);
-        margin-bottom: 1.5rem;
-        line-height: 1.6;
-    }
-
-    .game-over-buttons {
-        display: flex;
-        gap: 1rem;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        z-index: 1000;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
     }
 
-    .btn-return {
-        background: transparent;
-        border: 2px solid var(--gold);
-        color: var(--gold);
-        padding: 0.5rem 1.5rem;
-        font-family: var(--font-pixel);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.8rem;
-        text-transform: uppercase;
+    .game-over-title {
+        color: white;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 48px;
+        margin-bottom: 40px;
     }
 
-    .btn-return:hover {
-        background: var(--gold);
-        color: var(--dark);
+    .stat-row {
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        color: white;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 20px;
+    }
+
+    .stat-value {
+        color: #E1B100;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 20px;
+    }
+
+    .button-group {
+        margin-top: 50px;
+        display: flex;
+        gap: 20px;
+    }
+
+    .retry-btn {
+        background: transparent;
+        border: 3px solid #E1B100;
+        color: #E1B100;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 16px;
+        padding: 15px 30px;
+        cursor: pointer;
+    }
+
+    .menu-btn {
+        background: transparent;
+        border: 3px solid #7A8D9D;
+        color: #7A8D9D;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 16px;
+        padding: 15px 30px;
+        cursor: pointer;
+    }
+
+    .retry-btn:hover {
+        background: #E1B100;
+        color: black;
+    }
+
+    .menu-btn:hover {
+        background: #7A8D9D;
+        color: black;
     }
 </style>
 {% endblock %}
@@ -219,16 +228,31 @@
         </div>
     </div>
 
-    <!-- Connection Status -->
     <div class="connection-status" id="connection-status">Connecting...</div>
+</div>
 
-    <!-- Game Over Modal -->
-    <div class="game-over-modal" id="game-over-modal">
-        <div class="game-over-title" id="game-over-title">Game Over</div>
-        <div class="game-over-content" id="game-over-content"></div>
-        <div class="game-over-buttons">
-            <button class="btn-return" onclick="window.location.href='/app/user'">Return to Lobby</button>
-        </div>
+<!-- Game Over Summary Screen -->
+<div id="multiplayer-game-over-screen">
+    <h2 class="game-over-title">GAME OVER</h2>
+    
+    <div class="stat-row">
+        <span class="stat-label">TEAM SCORE: </span>
+        <span class="stat-value" id="team-final-score">0</span>
+    </div>
+    
+    <div class="stat-row">
+        <span class="stat-label">TEAM ASTEROIDS: </span>
+        <span class="stat-value" id="team-asteroids-destroyed">0</span>
+    </div>
+    
+    <div class="stat-row">
+        <span class="stat-label">TIME SURVIVED: </span>
+        <span class="stat-value" id="team-time-survived">0:00</span>
+    </div>
+    
+    <div class="button-group">
+        <button class="retry-btn" onclick="playAgain()">PLAY AGAIN</button>
+        <button class="menu-btn" onclick="exitToHome()">HOME</button>
     </div>
 </div>
 
