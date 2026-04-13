@@ -44,35 +44,31 @@ class SpaceShip {
         this.position = position;
         this.velocity = velocity;
         this.rotation = 0;
+        this.sprite = new Image();
+        this.sprite.src = '/static/Asteroids Asset Pack/sprites/spaceship/spaceship_thrust.png';
     }
 
-    draw() {
-        c.save();
-        c.translate(this.position.x, this.position.y);
-        c.rotate(this.rotation);
-        c.translate(-this.position.x, -this.position.y);
+draw() {
+    c.save();
+    c.translate(this.position.x, this.position.y);
+    c.rotate(this.rotation + Math.PI / 2);
 
+    const size = 64;
+    c.drawImage(this.sprite, -size / 2, -size / 2, size, size);
+
+    if (keys.w.pressed) {
         c.beginPath();
-        c.moveTo(this.position.x + 30, this.position.y);
-        c.lineTo(this.position.x - 10, this.position.y - 10);
-        c.lineTo(this.position.x - 10, this.position.y + 10);
+        c.moveTo(-5, 10); 
+        c.lineTo(0, 25);  
+        c.lineTo(5, 10);
         c.closePath();
-        c.strokeStyle = "white";
-        c.stroke();
-
-        if (keys.w.pressed) {
-            const flameLength = 15 + Math.random() * 10;
-            c.beginPath();
-            c.moveTo(this.position.x - 10, this.position.y - 5); // Top of Truster
-            c.lineTo(this.position.x - 25, this.position.y); // Tip of Truster
-            c.lineTo(this.position.x - 10, this.position.y + 5); // Bottom of Truster
-            c.closePath();
-            c.fillStyle = "orange";
-            c.fill();
-        }
-
-        c.restore();
+        c.fillStyle = "orange";
+        c.fill();
     }
+
+    c.restore();
+}
+
 
     update() {
         this.draw();

@@ -6,12 +6,15 @@ from app.routers import templates, static_files, router, api_router
 from app.routers.websocket import router as ws_router
 from app.config import get_settings
 from contextlib import asynccontextmanager
+from app.database import create_db_and_tables, engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from app.database import create_db_and_tables
+    from app.ship_seed import ship_seed
     create_db_and_tables()
+    ship_seed(engine)
     yield
 
 
