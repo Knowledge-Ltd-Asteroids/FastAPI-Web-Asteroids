@@ -4,6 +4,7 @@ from app.dependencies.auth import AuthDep
 from app.dependencies.session import SessionDep
 from app.models.lobby import Lobby
 from app.repositories.lobby import LobbyRepository
+from app.repositories.user import UserRepository
 from . import router, templates
 
 @router.get("/app/play/solo", response_class=HTMLResponse)
@@ -20,9 +21,6 @@ async def multiplayer_game_view(
     current_user: AuthDep,
     db: SessionDep
 ):
-    """Load multiplayer game with lobby verification"""
-    from app.repositories.lobby import LobbyRepository
-    
     lobby_repo = LobbyRepository(db)
     lobby = lobby_repo.get_by_invite_code(invite_code)
     
@@ -33,7 +31,6 @@ async def multiplayer_game_view(
             status_code=404
         )
     
-    # Verify user is part of this lobby
     if current_user.id != lobby.creator_id and current_user.id != lobby.invited_user_id:
         return templates.TemplateResponse(
             request=request,
@@ -41,7 +38,6 @@ async def multiplayer_game_view(
             status_code=403
         )
     
-    # Pass invite_code as template variable
     return templates.TemplateResponse(
         request=request,
         name="game_multiplayer.html",
@@ -54,7 +50,6 @@ async def coop_game_view(
     current_user: AuthDep,
     db: SessionDep
 ):
-    """Show co-op lobby selection: create or join"""
     return templates.TemplateResponse(
         request=request,
         name="coop_select.html",
@@ -67,8 +62,6 @@ async def create_coop_lobby(
     current_user: AuthDep,
     db: SessionDep
 ):
-    """Create a new co-op lobby and redirect to waiting room"""
-    # Create a new lobby for co-op gameplay
     invite_code = Lobby.generate_invite_code()
     
     lobby = Lobby(
@@ -80,7 +73,6 @@ async def create_coop_lobby(
     lobby_repo = LobbyRepository(db)
     lobby_repo.create(lobby)
     
-    # Redirect to co-op waiting page with invite code
     return RedirectResponse(
         url=f"/app/play/coop/lobby/{invite_code}",
         status_code=303
@@ -93,9 +85,6 @@ async def coop_lobby_view(
     current_user: AuthDep,
     db: SessionDep
 ):
-    """Show co-op lobby waiting room with invite code"""
-    from app.repositories.lobby import LobbyRepository
-    
     lobby_repo = LobbyRepository(db)
     lobby = lobby_repo.get_by_invite_code(invite_code)
     
@@ -106,7 +95,6 @@ async def coop_lobby_view(
             status_code=404
         )
     
-    # Verify user is part of this lobby (creator or invited player)
     if current_user.id != lobby.creator_id and current_user.id != lobby.invited_user_id:
         return templates.TemplateResponse(
             request=request,
@@ -114,7 +102,6 @@ async def coop_lobby_view(
             status_code=403
         )
     
-    # Pass lobby info to template
     return templates.TemplateResponse(
         request=request,
         name="coop_lobby.html",
@@ -130,10 +117,6 @@ async def join_coop_lobby(
     current_user: AuthDep,
     db: SessionDep
 ):
-    """Join an existing co-op lobby by invite code"""
-    from app.repositories.lobby import LobbyRepository
-    
-    # Get invite code from form data
     form_data = await request.form()
     invite_code = form_data.get("invite_code", "").strip().upper()
     
@@ -154,7 +137,6 @@ async def join_coop_lobby(
             status_code=404
         )
     
-    # Check if lobby is still waiting for players
     if lobby.invited_user_id is not None:
         return templates.TemplateResponse(
             request=request,
@@ -163,7 +145,6 @@ async def join_coop_lobby(
             context={"message": "This lobby is already full or game has started"}
         )
     
-    # Check if user is trying to join their own lobby
     if current_user.id == lobby.creator_id:
         return templates.TemplateResponse(
             request=request,
@@ -172,14 +153,42 @@ async def join_coop_lobby(
             context={"message": "You cannot join your own lobby"}
         )
     
-    # Update lobby with invited player
     lobby.invited_user_id = current_user.id
     lobby.status = "ready"
     lobby_repo.update(lobby)
     
-    # Redirect to multiplayer game
-    from fastapi.responses import RedirectResponse
     return RedirectResponse(
         url=f"/app/play/multiplayer/{invite_code}",
         status_code=303
     )
+
+@router.get("/api/lobbies/{invite_code}")
+async def get_lobby_status(
+    invite_code: str,
+    current_user: AuthDep,
+    db: SessionDep
+):
+    lobby_repo = LobbyRepository(db)
+    lobby = lobby_repo.get_by_invite_code(invite_code)
+    
+    if not lobby:
+        return {"error": "Lobby not found"}, 404
+    
+    if current_user.id != lobby.creator_id and current_user.id != lobby.invited_user_id:
+        return {"error": "Unauthorized"}, 403
+    
+    invited_user = None
+    if lobby.invited_user_id:
+        user_repo = UserRepository(db)
+        user = user_repo.get_by_id(lobby.invited_user_id)
+        if user:
+            invited_user = {
+                "id": user.id,
+                "username": user.username
+            }
+    
+    return {
+        "status": lobby.status,
+        "invited_user": invited_user,
+        "invite_code": lobby.invite_code
+    }
