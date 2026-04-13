@@ -73,6 +73,19 @@ class AsteroidGameSession:
         if "projectiles" in state:
             player["projectiles"] = state["projectiles"]
 
+    def add_projectile(self, player_id: str, projectile_data: Dict) -> None:
+        if player_id not in self.players:
+            return
+
+        player = self.players[player_id]
+        projectile = {
+            "id": str(uuid.uuid4()),
+            "position": projectile_data.get("position", {"x": 0, "y": 0}).copy(),
+            "velocity": projectile_data.get("velocity", {"x": 0, "y": 0}).copy(),
+            "radius": 5,
+        }
+        player["projectiles"].append(projectile)
+
     def update_difficulty(self, difficulty: float, spawn_interval: float) -> None:
         self.difficulty = difficulty
         self.ASTEROID_SPAWN_INTERVAL = spawn_interval
@@ -123,6 +136,21 @@ class AsteroidGameSession:
         for asteroid in self.asteroids:
             asteroid["position"]["x"] += asteroid["velocity"]["x"]
             asteroid["position"]["y"] += asteroid["velocity"]["y"]
+
+    def update_projectiles(self) -> None:
+        for player_id, player in self.players.items():
+            player["projectiles"] = [
+                proj for proj in player["projectiles"]
+                if not (
+                    proj["position"]["x"] + proj["radius"] < 0 or
+                    proj["position"]["x"] - proj["radius"] > self.CANVAS_WIDTH or
+                    proj["position"]["y"] + proj["radius"] < 0 or
+                    proj["position"]["y"] - proj["radius"] > self.CANVAS_HEIGHT
+                )
+            ]
+            for projectile in player["projectiles"]:
+                projectile["position"]["x"] += projectile["velocity"]["x"]
+                projectile["position"]["y"] += projectile["velocity"]["y"]
 
     def check_collisions(self) -> List[Dict]:
         collision_events = []
@@ -230,6 +258,7 @@ class AsteroidGameSession:
                     "rotation": p["rotation"],
                     "lives": p["lives"],
                     "score": p["score"],
+                    "projectiles": p.get("projectiles", []),
                 }
                 for pid, p in self.players.items()
             },
@@ -320,6 +349,7 @@ class AsteroidGameSession:
         while self.is_active:
             self.spawn_asteroids(current_time_ms)
             self.update_asteroids()
+            self.update_projectiles()
 
             collision_events = self.check_collisions()
 

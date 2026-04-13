@@ -32,7 +32,9 @@ let gameState = {
 let playerId = null;
 let playerName = null;
 let opponentData = null;
+let opponentShip = null;
 let opponentName = null;
+let opponentSprite = null;
 let ws = null;
 let isGameOver = false;
 
@@ -62,8 +64,21 @@ draw() {
     c.translate(this.position.x, this.position.y);
     c.rotate(this.rotation + Math.PI / 2);
 
-    const size = 64;
-    c.drawImage(this.sprite, -size / 2, -size / 2, size, size);
+    // Maintain aspect ratio
+    const maxSize = 40;
+    let drawWidth = maxSize;
+    let drawHeight = maxSize;
+    
+    if (this.sprite.complete && this.sprite.naturalWidth > 0) {
+        const aspectRatio = this.sprite.naturalWidth / this.sprite.naturalHeight;
+        if (aspectRatio > 1) {
+            drawHeight = maxSize / aspectRatio;
+        } else {
+            drawWidth = maxSize * aspectRatio;
+        }
+    }
+    
+    c.drawImage(this.sprite, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 
     if (keys.w.pressed) {
         c.beginPath();
@@ -112,25 +127,38 @@ draw() {
 }
 
 class OpponentShip {
-    constructor({ position, rotation }) {
+    constructor({ position, rotation, sprite }) {
         this.position = position;
         this.rotation = rotation;
+        this.sprite = new Image();
+        if (sprite) {
+            this.sprite.src = `/static/Asteroids Asset Pack/sprites/spaceship/${sprite}`;
+        } else {
+            this.sprite.src = '/static/Asteroids Asset Pack/sprites/spaceship/spaceship_thrust.png';
+        }
     }
 
     draw(color = "#E1B100") {
         c.save();
         c.translate(this.position.x, this.position.y);
-        c.rotate(this.rotation);
-        c.translate(-this.position.x, -this.position.y);
+        c.rotate(this.rotation + Math.PI / 2);
 
-        c.beginPath();
-        c.moveTo(this.position.x + 30, this.position.y);
-        c.lineTo(this.position.x - 10, this.position.y - 10);
-        c.lineTo(this.position.x - 10, this.position.y + 10);
-        c.closePath();
-        c.strokeStyle = color;
-        c.lineWidth = 2;
-        c.stroke();
+        // Maintain aspect ratio
+        const maxSize = 40;
+        let drawWidth = maxSize;
+        let drawHeight = maxSize;
+        
+        if (this.sprite.complete && this.sprite.naturalWidth > 0) {
+            const aspectRatio = this.sprite.naturalWidth / this.sprite.naturalHeight;
+            if (aspectRatio > 1) {
+                drawHeight = maxSize / aspectRatio;
+            } else {
+                drawWidth = maxSize * aspectRatio;
+            }
+        }
+        
+        c.drawImage(this.sprite, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+
         c.restore();
     }
 
@@ -276,10 +304,23 @@ const keys = {
     w: { pressed: false },
     a: { pressed: false },
     d: { pressed: false },
+    space: { pressed: false },
 };
 
 const projectiles = [];
 let animationID = null;
+let lastFireTime = 0;
+const FIRE_RATE = 125; // milliseconds between shots
+
+const stars = [];
+for (let i = 0; i < 100; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2,
+    });
+}
+
 const asteroidMap = new Map();
 
 const Spaceship_Speed = 4;
@@ -299,18 +340,8 @@ window.addEventListener("keydown", (event) => {
             keys.d.pressed = true;
             break;
         case "Space":
-            projectiles.push(
-                new Projectiles({
-                    position: {
-                        x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
-                        y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
-                    },
-                    velocity: {
-                        x: Math.cos(spaceship.rotation) * Projectile_Speed,
-                        y: Math.sin(spaceship.rotation) * Projectile_Speed,
-                    },
-                })
-            );
+            keys.space.pressed = true;
+            event.preventDefault();
             break;
     }
 });
@@ -326,6 +357,10 @@ window.addEventListener("keyup", (event) => {
         case "KeyD":
             keys.d.pressed = false;
             break;
+        case "Space":
+            keys.space.pressed = false;
+            event.preventDefault();
+            break;
     }
 });
 
@@ -334,6 +369,13 @@ function animate() {
 
     c.fillStyle = "black";
     c.fillRect(0, 0, canvas.width, canvas.height);
+
+    c.fillStyle = "white";
+    for (let star of stars) {
+        c.beginPath();
+        c.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        c.fill();
+    }
 
     spaceship.update();
 
@@ -351,18 +393,33 @@ function animate() {
     }
 
 
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-        const projectile = projectiles[i];
-        projectile.update();
-
-        if (
-            projectile.position.x + projectile.radius < 0 ||
-            projectile.position.x - projectile.radius > canvas.width ||
-            projectile.position.y - projectile.radius > canvas.height ||
-            projectile.position.y + projectile.radius < 0
-        ) {
-            projectiles.splice(i, 1);
+    let totalProjectilesCount = 0;
+    for (const [playerIdInState, playerData] of Object.entries(gameState.players)) {
+        if (playerData.projectiles && playerData.projectiles.length > 0) {
+            totalProjectilesCount += playerData.projectiles.length;
+            playerData.projectiles.forEach((proj) => {
+                const size = 4;
+                c.save();
+                c.translate(proj.position.x, proj.position.y);
+                
+                if (playerIdInState === playerId) {
+                    c.fillStyle = "white";
+                    c.strokeStyle = "rgba(255, 255, 255, 0.8)";
+                } else {
+                    c.fillStyle = "#FFD700";
+                    c.strokeStyle = "rgba(255, 215, 0, 0.8)";
+                }
+                
+                c.fillRect(-size/2, -size/2, size, size);
+                c.lineWidth = 1;
+                c.strokeRect(-size/2, -size/2, size, size);
+                c.restore();
+            });
         }
+    }
+    
+    if (gameStartTime % 20 === 0) {
+        console.log(`Projectiles in gameState: ${totalProjectilesCount}`);
     }
 
     for (let i = gameState.asteroids.length - 1; i >= 0; i--) {
@@ -388,8 +445,13 @@ function animate() {
     }
 
     if (gameMode === "multiplayer" && opponentData) {
-        const opponent = new OpponentShip(opponentData);
-        opponent.draw("#E1B100");
+        if (!opponentShip || opponentShip.sprite.src.split('/').pop() !== opponentSprite) {
+            opponentShip = new OpponentShip(opponentData);
+        } else {
+            opponentShip.position = opponentData.position;
+            opponentShip.rotation = opponentData.rotation;
+        }
+        opponentShip.draw("#E1B100");
     }
 
     if (keys.w.pressed) {
@@ -404,6 +466,10 @@ function animate() {
         spaceship.rotation -= Rotate_Speed;
     } else if (keys.d.pressed) {
         spaceship.rotation += Rotate_Speed;
+    }
+
+    if (keys.space.pressed) {
+        sendShootEvent();
     }
 
     renderStats();
@@ -463,7 +529,8 @@ function renderStats() {
 
             opponentData = {
                 position: opponentPlayerData.position,
-                rotation: opponentPlayerData.rotation
+                rotation: opponentPlayerData.rotation,
+                sprite: opponentSprite
             };
         }
 
@@ -538,7 +605,10 @@ function initializeWebSocket() {
 
             if (message.player_id !== playerId) {
                 opponentName = message.username;
-                console.log(`Opponent: ${opponentName}`);
+                if (message.ship_sprite) {
+                    opponentSprite = message.ship_sprite;
+                }
+                console.log(`Opponent: ${opponentName}`, message.ship_sprite ? `(${message.ship_sprite})` : '');
             }
 
             if (message.other_players) {
@@ -566,7 +636,8 @@ function initializeWebSocket() {
                     position: playerData.position,
                     rotation: playerData.rotation,
                     lives: playerData.lives,
-                    score: playerData.score
+                    score: playerData.score,
+                    projectiles: playerData.projectiles || []
                 };
             }
 
@@ -592,8 +663,6 @@ function initializeWebSocket() {
                         if (gameMode === "multiplayer") {
                             teamAsteroidsDestroyed++;
                         }
-
-                        projectiles.length = 0;
                     } else if (collision.type === "ship_hit") {
                         console.log("Ship hit! Lives decreased");
                     }
@@ -639,16 +708,38 @@ function sendPlayerState() {
             position: spaceship.position,
             rotation: spaceship.rotation,
             velocity: spaceship.velocity,
-            projectiles: projectiles.map((p) => ({
-                id: p.id,
-                position: p.position,
-                velocity: p.velocity,
-                radius: p.radius,
-            })),
         },
     };
 
     ws.send(JSON.stringify(playerState));
+}
+
+function sendShootEvent() {
+    const now = Date.now();
+    if (now - lastFireTime < FIRE_RATE) {
+        return; // Fire rate cooldown not met
+    }
+    lastFireTime = now;
+
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        return;
+    }
+
+    const shootEvent = {
+        type: "shoot",
+        data: {
+            position: {
+                x: spaceship.position.x + Math.cos(spaceship.rotation) * 30,
+                y: spaceship.position.y + Math.sin(spaceship.rotation) * 30,
+            },
+            velocity: {
+                x: Math.cos(spaceship.rotation) * Projectile_Speed,
+                y: Math.sin(spaceship.rotation) * Projectile_Speed,
+            },
+        },
+    };
+
+    ws.send(JSON.stringify(shootEvent));
 }
 
 function formatTime(seconds) {

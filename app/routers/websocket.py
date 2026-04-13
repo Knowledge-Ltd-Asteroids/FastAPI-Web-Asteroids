@@ -154,6 +154,9 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
             if message["type"] == "player_update":
                 game_session.update_player_state(player_id, message["data"])
 
+            elif message["type"] == "shoot":
+                game_session.add_projectile(player_id, message["data"])
+
             elif message["type"] == "difficulty_update":
                 game_session.update_difficulty(
                     message["data"]["difficulty"],
@@ -298,18 +301,23 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
 
 
     player_user_mapping[session_id][player_id] = user_id
-    player_info[session_id][player_id] = {"username": username, "user_id": user_id}
-
-    game_session.add_player(player_id)
-    if profile:
-        game_session.register_player_db_id(player_id, profile_id)
-
+    
     equipped_ship = None
     for owned in profile.ships:
         if owned.equipped:
             equipped_ship = owned.cosmetic_ship
             break
     ship_sprite = equipped_ship.sprite if equipped_ship else "spaceship_thrust.png"
+    
+    player_info[session_id][player_id] = {
+        "username": username,
+        "user_id": user_id,
+        "ship_sprite": ship_sprite
+    }
+
+    game_session.add_player(player_id)
+    if profile:
+        game_session.register_player_db_id(player_id, profile_id)
 
     await websocket.send_json({
         "type": "connection",
@@ -346,6 +354,9 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
 
             if message["type"] == "player_update":
                 game_session.update_player_state(player_id, message["data"])
+
+            elif message["type"] == "shoot":
+                game_session.add_projectile(player_id, message["data"])
 
             elif message["type"] == "difficulty_update":
                 game_session.update_difficulty(
