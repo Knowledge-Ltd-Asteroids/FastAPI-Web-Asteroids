@@ -36,6 +36,9 @@ let opponentName = null;
 let ws = null;
 let isGameOver = false;
 
+let asteroidsDestroyedCount = 0;
+let gameStartTime = Date.now();
+
 class SpaceShip {
     constructor({ position, velocity }) {
         this.position = position;
@@ -564,6 +567,7 @@ function initializeWebSocket() {
                 data.collisions.forEach((collision) => {
                     if (collision.type === "asteroid_destroyed") {
                         console.log(`Asteroid destroyed! Score: +${collision.score_gained}`);
+                        asteroidsDestroyedCount++;
                         projectiles.length = 0;
                     } else if (collision.type === "ship_hit") {
                         console.log("Ship hit! Lives decreased");
@@ -622,26 +626,24 @@ function sendPlayerState() {
     ws.send(JSON.stringify(playerState));
 }
 
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 function endGame() {
-    console.log("Game Over!");
-    if (animationID) {
-        cancelAnimationFrame(animationID);
-    }
-
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "game_over" }));
-        ws.close();
-    }
-
-    // Display game over screen
-    c.fillStyle = "rgba(0, 0, 0, 0.7)";
-    c.fillRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = "white";
-    c.font = "60px Arial";
-    c.textAlign = "center";
-    c.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
-    c.font = "30px Arial";
-    c.fillText(`Final Score: ${gameState.playerScore}`, canvas.width / 2, canvas.height / 2 + 60);
+    const timeSurvived = Math.floor((Date.now() - gameStartTime) / 1000);
+    
+    if (animationID) cancelAnimationFrame(animationID);
+    if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+    
+    document.getElementById("canvas").style.display = "none";
+    document.getElementById("game-over-screen").style.display = "flex";
+    
+    document.getElementById("final-score").textContent = gameState.playerScore;
+    document.getElementById("asteroids-destroyed").textContent = asteroidsDestroyedCount;
+    document.getElementById("time-survived").textContent = formatTime(timeSurvived);
 }
 
 initializeWebSocket();

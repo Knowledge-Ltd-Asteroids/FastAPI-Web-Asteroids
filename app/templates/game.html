@@ -12,10 +12,109 @@
     #canvas {
         display: block;
     }
+
+    #game-over-screen {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        z-index: 1000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .game-over-title {
+        color: white;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 48px;
+        margin-bottom: 40px;
+    }
+
+    .stat-row {
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        color: white;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 20px;
+    }
+
+    .stat-value {
+        color: #E1B100;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 20px;
+    }
+
+    .button-group {
+        margin-top: 50px;
+        display: flex;
+        gap: 20px;
+    }
+
+    .retry-btn {
+        background: transparent;
+        border: 3px solid #E1B100;
+        color: #E1B100;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 16px;
+        padding: 15px 30px;
+        cursor: pointer;
+    }
+
+    .menu-btn {
+        background: transparent;
+        border: 3px solid #7A8D9D;
+        color: #7A8D9D;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 16px;
+        padding: 15px 30px;
+        cursor: pointer;
+    }
+
+    .retry-btn:hover {
+        background: #E1B100;
+        color: black;
+    }
+
+    .menu-btn:hover {
+        background: #7A8D9D;
+        color: black;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <canvas id="canvas"></canvas>
+
+<!-- Game Over Screen -->
+<div id="game-over-screen">
+    <h2 class="game-over-title">GAME OVER</h2>
+    
+    <div class="stat-row">
+        <span class="stat-label">SCORE: </span>
+        <span class="stat-value" id="final-score">0</span>
+    </div>
+    
+    <div class="stat-row">
+        <span class="stat-label">ASTEROIDS: </span>
+        <span class="stat-value" id="asteroids-destroyed">0</span>
+    </div>
+    
+    <div class="stat-row">
+        <span class="stat-label">TIME: </span>
+        <span class="stat-value" id="time-survived">0:00</span>
+    </div>
+    
+    <div class="button-group">
+        <button class="retry-btn" onclick="window.location.reload()">RETRY</button>
+        <button class="menu-btn" onclick="window.location.href='/app'">MENU</button>
+    </div>
+</div>
+
 <script src="{{ url_for('static', path='js/astro-blaster.js') }}"></script>
 {% endblock %}

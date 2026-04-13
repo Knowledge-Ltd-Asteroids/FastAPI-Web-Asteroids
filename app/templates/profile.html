@@ -412,7 +412,7 @@
                 <form method="POST" action="/profile_update_username" style="display: contents;">
                     <input type="text" name="new_username" class="edit-input" 
                            value="{{ user.username }}" 
-                           minlength="5" maxlength="128" required>
+                           maxlength="128" required>
                     <div class="form-actions">
                         <button type="submit" class="save-btn">SAVE</button>
                         <button type="button" class="cancel-btn" onclick="toggleEdit('username')">CANCEL</button>
