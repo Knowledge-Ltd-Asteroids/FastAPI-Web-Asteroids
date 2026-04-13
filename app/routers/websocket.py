@@ -1,6 +1,5 @@
 import asyncio
 import json
-import profile
 import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
@@ -206,7 +205,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
     else:
-        if lobby.status not in ["waiting", "ready", "playing"]:
+        if lobby.status not in ["ready", "playing"]:
             await websocket.send_json({"type": "error", "message": f"Lobby is {lobby.status}, please wait..."})
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return
@@ -229,6 +228,8 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
     user_repo = UserRepository(db)
     user = user_repo.get_by_id(user_id)
     username = user.username if user else "Unknown"
+    
+    profile_id = profile.id if profile else None
 
     if session_id not in active_sessions:
         game_session = AsteroidGameSession(
@@ -278,10 +279,6 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
         )
         db.add(gsp)
         db.commit()
-
-        profile_id = profile.id
-
-        db.close()
 
     active_connections[session_id].append(websocket)
 
@@ -354,7 +351,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             game_session.stop()
 
             try:
-                await game_session.save_session_to_db(db_session_id)
+                await game_session.save_session_to_db(db_session_id, db)
             except Exception as e:
                 print(f"[MP] Failed to save session: {e}")
 
@@ -366,3 +363,5 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             lobby.status = "completed"
             lobby.ended_at = datetime.now(timezone.utc)
             lobby_repo.update(lobby)
+        
+        db.close()
