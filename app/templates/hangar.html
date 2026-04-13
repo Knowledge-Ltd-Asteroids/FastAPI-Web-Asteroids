@@ -1,2 +1,150 @@
 {% extends "authenticated-base.html" %}
 {% block title %}Hangar{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .hangar-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        margin-bottom: 1.5rem;
+    }
+    
+    .hangar-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .ship-card {
+        border: 1px solid var(--slate);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .ship-sprite-container {
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .ship-sprite {
+        width: 64px;
+        height: 64px;
+        image-rendering: pixelated;
+    }
+    
+    .sprite-fallback {
+        width: 64px;
+        height: 64px;
+        background: var(--slate);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .sprite-fallback span {
+        color: var(--dark);
+    }
+    
+    .ship-info {
+        flex: 1;
+    }
+    
+    .ship-name {
+        color: var(--gold);
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .ship-description {
+        color: var(--light);
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .ship-action {
+        text-align: right;
+    }
+    
+    .equipped-badge {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.75rem;
+    }
+    
+    .equip-form {
+        display: inline;
+    }
+    
+    .equip-btn {
+        background: transparent;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        padding: 0.5rem 1.5rem;
+        cursor: pointer;
+        font-family: var(--font-pixel);
+        font-size: 0.75rem;
+    }
+    
+    .empty-hangar {
+        color: var(--slate);
+    }
+    
+    .store-link {
+        color: var(--gold);
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+
+<h1 class="hangar-title">HANGAR</h1>
+
+{% if owned_ships %}
+    <div class="hangar-grid">
+        {% for ship in owned_ships %}
+        <div class="ship-card">
+            
+            <div class="ship-sprite-container">
+                {% if ship.sprite %}
+                    <img src="{{ url_for('static', path='Asteroids Asset Pack/sprites/spaceship/' + ship.sprite) }}"
+                         alt="{{ ship.name }}" 
+                         class="ship-sprite"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="sprite-fallback" style="display: none;">
+                        <span>No Sprite</span>
+                    </div>
+                {% else %}
+                    <div class="sprite-fallback">
+                        <span>No Sprite</span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="ship-info">
+                <h3 class="ship-name">{{ ship.name }}</h3>
+                <p class="ship-description">{{ ship.description }}</p>
+            </div>
+            
+            <div class="ship-action">
+                {% if ship.id == equipped_ship_id %}
+                    <span class="equipped-badge">⚡ EQUIPPED</span>
+                {% else %}
+                    <form method="POST" action="/hangar/equip" class="equip-form">
+                        <input type="hidden" name="ship_id" value="{{ ship.id }}">
+                        <button type="submit" class="equip-btn">EQUIP</button>
+                    </form>
+                {% endif %}
+            </div>
+            
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-hangar">You don't own any ships yet.</p>
+    <a href="/store" class="store-link">→ Visit Store</a>
+{% endif %}
+
+{% endblock %}

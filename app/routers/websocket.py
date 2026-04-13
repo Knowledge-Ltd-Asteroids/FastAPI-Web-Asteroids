@@ -1,5 +1,6 @@
 import asyncio
 import json
+import profile
 import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
@@ -101,6 +102,11 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
     db.add(gsp)
     db.commit()
 
+    db_game_session_id = db_game_session.id  
+    profile_id = profile.id  
+
+    db.close()
+
     if session_id not in active_sessions:
         game_session = AsteroidGameSession(
             session_id, mode="solo",
@@ -121,7 +127,7 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
 
     player_id = f"solo_{uuid.uuid4().hex[:8]}"
     game_session.add_player(player_id)
-    game_session.register_player_db_id(player_id, profile.id)  
+    game_session.register_player_db_id(player_id, profile_id)  
 
     await websocket.send_json({
         "type": "connection",
@@ -155,7 +161,7 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
     finally:
 
         try:
-            await game_session.save_session_to_db(db_game_session.id, db)
+            await game_session.save_session_to_db(db_game_session_id)
         except Exception as e:
             print(f"[SOLO] Failed to save session: {e}")
 
@@ -167,7 +173,6 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
             active_sessions.pop(session_id, None)
             active_connections.pop(session_id, None)
 
-        db.close()
 
 @router.websocket("/ws/multiplayer/{invite_code}")
 async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str):
@@ -274,6 +279,10 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
         db.add(gsp)
         db.commit()
 
+        profile_id = profile.id
+
+        db.close()
+
     active_connections[session_id].append(websocket)
 
     if user_id == lobby.creator_id:
@@ -287,7 +296,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
 
     game_session.add_player(player_id)
     if profile:
-        game_session.register_player_db_id(player_id, profile.id)
+        game_session.register_player_db_id(player_id, profile_id)
 
     await websocket.send_json({
         "type": "connection",
@@ -345,7 +354,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             game_session.stop()
 
             try:
-                await game_session.save_session_to_db(db_session_id, db)
+                await game_session.save_session_to_db(db_session_id)
             except Exception as e:
                 print(f"[MP] Failed to save session: {e}")
 
@@ -357,5 +366,3 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
             lobby.status = "completed"
             lobby.ended_at = datetime.now(timezone.utc)
             lobby_repo.update(lobby)
-
-        db.close()

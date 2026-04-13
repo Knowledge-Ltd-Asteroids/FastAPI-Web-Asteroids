@@ -1,2 +1,306 @@
 {% extends "authenticated-base.html" %}
 {% block title %}Store{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .store-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        margin-bottom: 1.5rem;
+    }
+    
+    .credits-display {
+        margin-bottom: 1.5rem;
+        padding: 0.75rem 1rem;
+        background: rgba(28, 30, 38, 0.5);
+        border: 1px solid var(--slate);
+        border-radius: 8px;
+        display: inline-block;
+    }
+    
+    .credits-label {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        margin-right: 0.5rem;
+    }
+    
+    .credits-value {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 1.25rem;
+    }
+    
+    .ship-card {
+        border: 1px solid var(--slate);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .ship-sprite-container {
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .ship-sprite {
+        width: 64px;
+        height: 64px;
+        image-rendering: pixelated;
+    }
+    
+    .sprite-fallback {
+        width: 64px;
+        height: 64px;
+        background: var(--slate);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .sprite-fallback span {
+        color: var(--dark);
+        font-size: 0.7rem;
+    }
+    
+    .ship-info {
+        flex: 1;
+    }
+    
+    .ship-name {
+        color: var(--gold);
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .ship-description {
+        color: var(--light);
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .ship-price {
+        color: var(--gold);
+        margin: 0;
+    }
+    
+    .buy-btn {
+        background: transparent;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        padding: 0.5rem 1.5rem;
+        cursor: pointer;
+        font-family: var(--font-pixel);
+        font-size: 0.75rem;
+    }
+    
+    .empty-store {
+        color: var(--slate);
+    }
+    
+    .hangar-link {
+        color: var(--gold);
+        text-decoration: none;
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background: var(--dark);
+        border: 2px solid var(--gold);
+        border-radius: 8px;
+        padding: 2rem;
+        max-width: 400px;
+        text-align: center;
+    }
+    
+    .modal-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        margin-bottom: 1rem;
+    }
+    
+    .modal-text {
+        color: var(--light);
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-ship-name {
+        color: var(--gold);
+    }
+    
+    .modal-price-label {
+        color: var(--slate);
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-price {
+        color: var(--gold);
+    }
+    
+    .modal-warning {
+        color: var(--coral);
+        margin-bottom: 1rem;
+        display: none;
+    }
+    
+    .modal-form {
+        display: inline;
+    }
+    
+    .confirm-btn {
+        background: transparent;
+        border: 1px solid var(--success);
+        color: var(--success);
+        padding: 0.5rem 1.5rem;
+        margin-right: 1rem;
+        cursor: pointer;
+        font-family: var(--font-pixel);
+        font-size: 0.75rem;
+    }
+    
+    .confirm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .cancel-btn {
+        background: transparent;
+        border: 1px solid var(--coral);
+        color: var(--coral);
+        padding: 0.5rem 1.5rem;
+        cursor: pointer;
+        font-family: var(--font-pixel);
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+
+<h1 class="store-title">STORE</h1>
+
+<div class="credits-display">
+    <span class="credits-label">Your Credits:</span>
+    <span class="credits-value">{{ user.profile.currency if user.profile else '0' }}</span>
+</div>
+
+{% if ships %}
+    <div>
+        {% for ship in ships %}
+        <div class="ship-card">
+            
+            <div class="ship-sprite-container">
+                {% if ship.sprite %}
+                    <img src="{{ url_for('static', path='Asteroids Asset Pack/sprites/spaceship/' + ship.sprite) }}"
+                         alt="{{ ship.name }}" 
+                         class="ship-sprite"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="sprite-fallback" style="display: none;">
+                        <span>No Image</span>
+                    </div>
+                {% else %}
+                    <div class="sprite-fallback">
+                        <span>No Sprite</span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="ship-info">
+                <h3 class="ship-name">{{ ship.name }}</h3>
+                <p class="ship-description">{{ ship.description }}</p>
+                <p class="ship-price">Price: {{ ship.price }}</p>
+            </div>
+            
+            <div>
+                <button type="button" 
+                        onclick="showModal('{{ ship.id }}', '{{ ship.name }}', '{{ ship.price }}')"
+                        class="buy-btn">
+                    BUY
+                </button>
+            </div>
+            
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-store">No ships available for purchase.</p>
+    <a href="/hangar" class="hangar-link">→ View Your Hangar</a>
+{% endif %}
+
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">CONFIRM PURCHASE</h3>
+        
+        <p class="modal-text">
+            Buy <span id="modalShipName" class="modal-ship-name"></span>?
+        </p>
+        
+        <p class="modal-price-label">
+            Price: <span id="modalShipPrice" class="modal-price"></span> Credits
+        </p>
+        
+        <p id="modalCreditWarning" class="modal-warning">
+            ⚠️ Insufficient credits!
+        </p>
+        
+        <form id="purchaseForm" method="POST" action="/store/purchase_ship" class="modal-form">
+            <input type="hidden" name="ship_id" id="modalShipId">
+            <button type="submit" id="confirmBtn" class="confirm-btn">
+                CONFIRM
+            </button>
+        </form>
+        
+        <button type="button" onclick="hideModal()" class="cancel-btn">
+            CANCEL
+        </button>
+    </div>
+</div>
+
+<script>
+    const userCredits = parseInt("{{ user.profile.currency if user.profile else 0 }}");
+    
+    function showModal(shipId, shipName, shipPrice) {
+        document.getElementById('modalShipId').value = shipId;
+        document.getElementById('modalShipName').textContent = shipName;
+        document.getElementById('modalShipPrice').textContent = shipPrice;
+        
+        const warning = document.getElementById('modalCreditWarning');
+        const confirmBtn = document.getElementById('confirmBtn');
+        
+        if (userCredits < shipPrice) {
+            warning.style.display = 'block';
+            confirmBtn.disabled = true;
+        } else {
+            warning.style.display = 'none';
+            confirmBtn.disabled = false;
+        }
+        
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+    
+    function hideModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+    
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideModal();
+        }
+    });
+</script>
+
+{% endblock %}

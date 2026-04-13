@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from app.services.physics import circle_collide, circle_triangle_collision, wrap_position
 from sqlmodel import select
 from app.models import GameSession, GameSessionPlayer, PlayerProfile
+from app.database import get_session
 
 
 class AsteroidGameSession:
@@ -232,59 +233,69 @@ class AsteroidGameSession:
         }
 
 
-    async def save_session_to_db(self, db_session_id: int, db) -> None:
+    async def save_session_to_db(self, db_session_id: int) -> None:
 
-        game_session = db.get(GameSession, db_session_id)
-        if not game_session:
-            return
+        db = next(get_session())
 
-        game_session.ended_at = datetime.now(timezone.utc)
-        game_session.game_mode = self.mode
+        try:
+            game_session = db.get(GameSession, db_session_id)
+            if not game_session:
+                return
 
-        total_score = 0
-        total_asteroids = 0
+            game_session.ended_at = datetime.now(timezone.utc)
+            game_session.game_mode = self.mode
 
-        for ws_player_id, player_data in self.players.items():
-            db_player_id = self._player_db_ids.get(ws_player_id)
-            if db_player_id is None:
-                continue
+            total_score = 0
+            total_asteroids = 0
 
-            gsp = db.exec(
-                select(GameSessionPlayer)
-                .where(GameSessionPlayer.session_id == db_session_id)
-                .where(GameSessionPlayer.player_id == db_player_id)
-            ).first()
+            for ws_player_id, player_data in self.players.items():
+                db_player_id = self._player_db_ids.get(ws_player_id)
+                if db_player_id is None:
+                    continue
 
-            if gsp:
-                gsp.score = player_data["score"]
-                gsp.asteroids_destroyed = player_data["asteroids_destroyed"]
-                gsp.currency_earned = player_data["asteroids_destroyed"] * 10
-                db.add(gsp)
+                gsp = db.exec(
+                    select(GameSessionPlayer)
+                    .where(GameSessionPlayer.session_id == db_session_id)
+                    .where(GameSessionPlayer.player_id == db_player_id)
+                ).first()
 
-            profile = db.get(PlayerProfile, db_player_id)
-            if profile:
-                profile.asteroids_destroyed += player_data["asteroids_destroyed"]
-                profile.currency += player_data["asteroids_destroyed"] * 10
-                profile.last_played = datetime.now(timezone.utc)
+                if gsp:
+                    gsp.score = player_data["score"]
+                    gsp.asteroids_destroyed = player_data["asteroids_destroyed"]
+                    gsp.currency_earned = player_data["asteroids_destroyed"] * 10
+                    db.add(gsp)
 
-                if self.mode == "solo":
-                    profile.solo_games_played += 1
-                    if player_data["score"] > profile.highest_solo_score:
-                        profile.highest_solo_score = player_data["score"]
-                else:
-                    profile.coop_games_played += 1
-                    if player_data["score"] > profile.highest_coop_score:
-                        profile.highest_coop_score = player_data["score"]
+                profile = db.get(PlayerProfile, db_player_id)
+                if profile:
+                    profile.asteroids_destroyed += player_data["asteroids_destroyed"]
+                    profile.currency += player_data["asteroids_destroyed"] * 10
+                    profile.last_played = datetime.now(timezone.utc)
 
-                db.add(profile)
+                    if self.mode == "solo":
+                        profile.solo_games_played += 1
+                        if player_data["score"] > profile.highest_solo_score:
+                            profile.highest_solo_score = player_data["score"]
+                    else:
+                        profile.coop_games_played += 1
+                        if player_data["score"] > profile.highest_coop_score:
+                            profile.highest_coop_score = player_data["score"]
 
-            total_score += player_data["score"]
-            total_asteroids += player_data["asteroids_destroyed"]
+                    db.add(profile)
 
-        game_session.total_score = total_score
-        game_session.total_asteroids_destroyed = total_asteroids
-        db.add(game_session)
-        db.commit()
+                total_score += player_data["score"]
+                total_asteroids += player_data["asteroids_destroyed"]
+
+            game_session.total_score = total_score
+            game_session.total_asteroids_destroyed = total_asteroids
+            db.add(game_session)
+            db.commit()
+
+        except Exception as e:
+            db.rollback()
+            raise e
+
+        finally:
+            db.close()
 
 
     async def start(self) -> None:
