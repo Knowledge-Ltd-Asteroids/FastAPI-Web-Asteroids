@@ -19,7 +19,7 @@ class OwnedShip(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     equipped: bool = False
 
-    player_id: int = Field(foreign_key="playerprofile.id", index=True)
+    player_id: int = Field(foreign_key="playerprofile.id", index=True , ondelete="CASCADE")
     player: Optional["PlayerProfile"] = Relationship(back_populates="ships")
 
     cosmetic_ship_id: int = Field(foreign_key="cosmeticship.id", index=True)

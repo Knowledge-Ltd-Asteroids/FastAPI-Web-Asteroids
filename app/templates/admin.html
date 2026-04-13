@@ -1,3 +1,256 @@
 {% extends "authenticated-base.html" %}
 
 {% block title %}Admin{% endblock %}
+
+{% block external_js %}
+{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .admin-title {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        margin-bottom: 1.5rem;
+    }
+    
+    .admin-stats-card {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(28, 30, 38, 0.5);
+        border: 1px solid var(--slate);
+        border-radius: 8px;
+    }
+    
+    .admin-stats-value {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 1.25rem;
+    }
+    
+    .admin-stats-label {
+        color: var(--slate);
+        margin-left: 0.5rem;
+    }
+    
+    .admin-search-form {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .admin-search-input {
+        flex: 1;
+        padding: 0.5rem;
+        background: transparent;
+        border: 1px solid var(--slate);
+        color: var(--light);
+    }
+    
+    .admin-search-select {
+        padding: 0.5rem;
+        background: transparent;
+        border: 1px solid var(--slate);
+        color: var(--light);
+    }
+    
+    .admin-filter-btn {
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        cursor: pointer;
+        font-family: var(--font-pixel);
+        font-size: 0.7rem;
+    }
+    
+    .admin-clear-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--slate);
+        color: var(--slate);
+        text-decoration: none;
+        font-size: 0.7rem;
+    }
+    
+    .admin-table-wrapper {
+        background: rgba(28, 30, 38, 0.5);
+        border: 1px solid var(--slate);
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+    }
+    
+    .admin-table th {
+        padding: 0.75rem;
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.7rem;
+        text-align: left;
+        border-bottom: 2px solid var(--gold);
+    }
+    
+    .admin-table th.text-center {
+        text-align: center;
+    }
+    
+    .admin-table th.text-right {
+        text-align: right;
+    }
+    
+    .admin-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(122, 141, 157, 0.2);
+    }
+    
+    .admin-table td.text-center {
+        text-align: center;
+    }
+    
+    .admin-table td.text-right {
+        text-align: right;
+    }
+    
+    .admin-username {
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+    }
+    
+    .admin-email {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.8rem;
+    }
+    
+    .admin-date {
+        color: var(--slate);
+        font-family: system-ui, sans-serif;
+        font-size: 0.8rem;
+    }
+    
+    .admin-ships {
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+    }
+    
+    .admin-credits {
+        color: var(--gold);
+        font-family: var(--font-pixel);
+        font-size: 0.8rem;
+    }
+    
+    .admin-games {
+        color: var(--light);
+        font-family: system-ui, sans-serif;
+    }
+    
+    .admin-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .admin-pagination-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--slate);
+        color: var(--slate);
+        text-decoration: none;
+    }
+    
+    .admin-pagination-btn.disabled {
+        opacity: 0.3;
+    }
+    
+    .admin-pagination-current {
+        padding: 0.5rem 1rem;
+        color: var(--gold);
+        font-family: var(--font-pixel);
+    }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+
+<div class="admin-container">
+    <h1 class="admin-title">ADMIN - USERS</h1>
+
+    <div class="admin-stats-card">
+        <span class="admin-stats-value">{{ total_users }}</span>
+        <span class="admin-stats-label">total registered users</span>
+    </div>
+
+    <!-- Search Query-->
+    <form method="GET" action="/admin" class="admin-search-form">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search username or email..." class="admin-search-input">
+        <select name="sort" class="admin-search-select">
+            <option value="newest" {{ 'selected' if sort == 'newest' }}>Newest</option>
+            <option value="oldest" {{ 'selected' if sort == 'oldest' }}>Oldest</option>
+            <option value="username" {{ 'selected' if sort == 'username' }}>Username</option>
+        </select>
+        <button type="submit" class="admin-filter-btn">FILTER</button>
+        {% if q %}
+        <a href="/admin" class="admin-clear-btn">CLEAR</a>
+        {% endif %}
+    </form>
+
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>USERNAME</th>
+                    <th>EMAIL</th>
+                    <th>REGISTERED</th>
+                    <th class="text-center">SHIPS</th>
+                    <th class="text-right">CREDITS</th>
+                    <th class="text-center">GAMES</th>
+                    <th>LAST PLAYED</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                {% set profile = profiles.get(u.id) %}
+                <tr>
+                    <td class="admin-username">{{ u.username }}</td>
+                    <td class="admin-email">{{ u.email }}</td>
+                    <td class="admin-date">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else 'N/A' }}</td>
+                    <td class="admin-ships text-center">{{ ship_counts.get(profile.id, 0) if profile else 0 }}</td>
+                    <td class="admin-credits text-right">{{ profile.currency if profile else 0 }}</td>
+                    <td class="admin-games text-center">{{ game_session_counts.get(profile.id, 0) if profile else 0 }}</td>
+                    <td class="admin-date">{{ profile.last_played.strftime('%Y-%m-%d') if profile and profile.last_played else 'Never' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- pagination if needed -->
+    {% if pagination.total_pages > 1 %}
+    <div class="admin-pagination">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}&limit={{ limit }}&q={{ q }}&sort={{ sort }}" class="admin-pagination-btn">← PREV</a>
+        {% else %}
+        <span class="admin-pagination-btn disabled">← PREV</span>
+        {% endif %}
+        
+        <span class="admin-pagination-current">{{ pagination.page }} / {{ pagination.total_pages }}</span>
+        
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}&limit={{ limit }}&q={{ q }}&sort={{ sort }}" class="admin-pagination-btn">NEXT →</a>
+        {% else %}
+        <span class="admin-pagination-btn disabled">NEXT →</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
