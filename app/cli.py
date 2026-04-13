@@ -16,82 +16,22 @@ def initialize():
         drop_all()
         create_db_and_tables()
 
-        password = encrypt_password("password")
-        
         users = [
-            User(username="bob", email="bob@mail.com", password=password, role="user"),
-            User(username="alice", email="alice@mail.com", password=password, role="user"),
-            User(username="admin", email="admin@mail.com", password=password, role="admin")
+            User(username="bob", email="bob@mail.com", password=encrypt_password("bobpass"), role="user"),
+            User(username="alice", email="alice@mail.com", password=encrypt_password("alicepass"), role="user"),
+            User(username="admin", email="admin@mail.com", password=encrypt_password("adminpass"), role="admin")
         ]
         for user in users:
             db.add(user)
         db.commit()
         
-        # Create player profiles with currency
         player_profiles = [
-            PlayerProfile(user_id=1, currency=2000),
-            PlayerProfile(user_id=2, currency=1500),
-            PlayerProfile(user_id=3, currency = 10000)
+            PlayerProfile(user_id=1, currency=0),
+            PlayerProfile(user_id=2, currency=0),
+            PlayerProfile(user_id=3, currency=0)
         ]
         for profile in player_profiles:
             db.add(profile)
-        db.commit()
-        
-        cosmetic_ships = [
-            CosmeticShip(
-                name="Classic Arrow",
-                description="The original classic spaceship design",
-                price=0,
-                sprite="spaceship_thrust.png",
-                is_default=True
-            ),
-            CosmeticShip(
-                name="Plasma Dart",
-                description="A sleek blue spacecraft with plasma energy",
-                price=500,
-                sprite="spaceship_thrust.png",
-                is_default=False
-            ),
-            CosmeticShip(
-                name="Neon Viper",
-                description="Neon green serpentine ship with sharp angles",
-                price=750,
-                sprite="spaceship_thrust.png",
-                is_default=False
-            ),
-            CosmeticShip(
-                name="Golden Phoenix",
-                description="Majestic gold ship with phoenix-like wings",
-                price=1000,
-                sprite="spaceship_thrust.png",
-                is_default=False
-            ),
-            CosmeticShip(
-                name="Obsidian Shadow",
-                description="Dark obsidian ship that seems to absorb light",
-                price=1200,
-                sprite="spaceship_thrust.png",
-                is_default=False
-            ),
-        ]
-
-        for ship in cosmetic_ships:
-            db.add(ship)
-        db.commit()
-        
-        owned_ships = [
-            # Bob's ships (player_id=1)
-            OwnedShip(player_id=1, cosmetic_ship_id=1),  # Classic Arrow (free)
-            OwnedShip(player_id=1, cosmetic_ship_id=2),  # Plasma Dart
-            OwnedShip(player_id=1, cosmetic_ship_id=3),  # Neon Viper
-
-            # Alice's ships (player_id=2)
-            OwnedShip(player_id=2, cosmetic_ship_id=1),  # Classic Arrow (free)
-            OwnedShip(player_id=2, cosmetic_ship_id=4),  # Golden Phoenix
-        ]
-
-        for owned_ship in owned_ships:
-            db.add(owned_ship)
         db.commit()
         
         #Dummy session data to pass to profile page
