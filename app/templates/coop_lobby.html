@@ -226,7 +226,7 @@
             <div class="invite-label">Share this code:</div>
             <div class="invite-code-container">
                 <div class="invite-code" id="invite-code">{{ invite_code }}</div>
-                <button class="copy-btn" onclick="copyInviteCode()">COPY</button>
+                <button class="copy-btn" onclick="copyInviteCode(event)">COPY</button>
             </div>
         </div>
 
@@ -242,12 +242,12 @@
 let autoRefreshInterval = null;
 let hasRedirected = false;
 
-function copyInviteCode() {
+function copyInviteCode(e) {
     const codeElement = document.getElementById('invite-code');
     const code = codeElement.textContent;
     
     navigator.clipboard.writeText(code).then(() => {
-        const btn = event.target;
+        const btn = e.target;
         const originalText = btn.textContent;
         btn.textContent = '✓ COPIED';
         btn.classList.add('copied');

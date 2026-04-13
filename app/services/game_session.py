@@ -20,6 +20,9 @@ class AsteroidGameSession:
         self.mode = mode
         self.is_active = False
 
+        self.game_start_time: Optional[datetime] = None
+        self.total_time_seconds: int = 0
+
         self.CANVAS_WIDTH = canvas_width
         self.CANVAS_HEIGHT = canvas_height
 
@@ -270,6 +273,10 @@ class AsteroidGameSession:
                     profile.asteroids_destroyed += player_data["asteroids_destroyed"]
                     profile.currency += player_data["asteroids_destroyed"] * 10
                     profile.last_played = datetime.now(timezone.utc)
+                    if self.game_start_time:
+                        elapsed = datetime.now(timezone.utc) - self.game_start_time
+                        session_seconds = int(elapsed.total_seconds())
+                        profile.total_seconds_played += session_seconds
 
                     if self.mode == "solo":
                         profile.solo_games_played += 1
@@ -300,6 +307,7 @@ class AsteroidGameSession:
 
     async def start(self) -> None:
         self.is_active = True
+        self.game_start_time = datetime.now(timezone.utc)
         try:
             await self._game_loop()
         except asyncio.CancelledError:
@@ -325,6 +333,9 @@ class AsteroidGameSession:
             await asyncio.sleep(self.TICK_INTERVAL)
 
     def stop(self) -> None:
+        if self.game_start_time:
+            elapsed = datetime.now(timezone.utc) - self.game_start_time
+            self.total_time_seconds = int(elapsed.total_seconds())
         self.is_active = False
         if self.task:
             self.task.cancel()
