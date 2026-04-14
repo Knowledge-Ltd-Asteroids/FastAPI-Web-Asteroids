@@ -7,6 +7,11 @@ from app.routers.websocket import router as ws_router
 from app.config import get_settings
 from contextlib import asynccontextmanager
 from app.database import create_db_and_tables, engine
+from app.services.auth_service import AuthService
+from app.repositories.user import UserRepository
+from app.utilities.security import encrypt_password
+from app.models.user import User
+from sqlmodel import Session
 
 
 @asynccontextmanager
@@ -15,9 +20,23 @@ async def lifespan(app: FastAPI):
     from app.ship_seed import ship_seed
     create_db_and_tables()
     ship_seed(engine)
+
+    with Session(engine) as session:
+        user_repo = UserRepository(session)
+        auth_service = AuthService(user_repo)
+        admin_user = session.query(User).filter(User.username == "admin").first()
+        if not admin_user:
+            admin_password = encrypt_password("adminpass")
+            admin_user = User(
+                username="admin",
+                email="admin@example.com",
+                password=admin_password,
+                role="admin"
+            )
+            session.add(admin_user)
+            session.commit()
+
     yield
-
-
 
 app = FastAPI(middleware=[
     Middleware(SessionMiddleware, secret_key=get_settings().secret_key)
