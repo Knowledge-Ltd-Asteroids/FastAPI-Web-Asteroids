@@ -390,24 +390,24 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
         pass
 
     finally:
+
         active_connections[session_id].remove(websocket)
         player_info[session_id].pop(player_id, None)
 
         try:
-            await game_session.save_session_to_db(db_session_id)
+            await game_session.save_session_to_db(db_session_id)  
         except Exception as e:
             pass
-
         game_session.remove_player(player_id)
 
         if len(game_session.players) == 0:
-            game_session.stop()
-            active_sessions.pop(session_id, None)
-            active_connections.pop(session_id, None)
-            player_user_mapping.pop(session_id, None)
-            player_info.pop(session_id, None)
-            lobby.status = "completed"
-            lobby.ended_at = datetime.now(timezone.utc)
-            lobby_repo.update(lobby)
+                game_session.stop()
+                active_sessions.pop(session_id, None)
+                active_connections.pop(session_id, None)
+                player_user_mapping.pop(session_id, None)
+                player_info.pop(session_id, None)
+                lobby.status = "completed"
+                lobby.ended_at = datetime.now(timezone.utc)
+                lobby_repo.update(lobby)
 
         db.close()
