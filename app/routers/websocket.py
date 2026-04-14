@@ -62,57 +62,77 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
     await websocket.accept()
 
     user_data = await get_user_from_websocket(websocket)
+
+    user_data = await get_user_from_websocket(websocket)
+    is_guest = False
+
     if not user_data:
-        await websocket.send_json({"type": "error", "message": "Unauthorized"})
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return
-
-    user_id = user_data["user_id"]
-    db = next(get_session())
-
-    user_repo = UserRepository(db)
-    user = user_repo.get_by_id(user_id)
-    username = user.username if user else "Unknown"
-
-    profile = db.exec(
-        select(PlayerProfile).where(PlayerProfile.user_id == user_id)
-    ).first()
-    if not profile:
-        await websocket.send_json({"type": "error", "message": "Player profile not found"})
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return
+        guest_cookie = websocket.cookies.get("guest_id")
+        if guest_cookie.startswith("guest_"):
+            is_guest = True
+        else:
+            await websocket.send_json({"type": "error", "message": "Unauthorized"})
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
     
-    equipped_ship = None
-    for owned in profile.ships:
-        if owned.equipped:
-            equipped_ship = owned.cosmetic_ship
-            break
+    if is_guest:
+        username = "Guest"
+        ship_sprite = "spaceship_thrust.png"
+        db_game_session_id = None
+        profile_id = None
+        init_data = await websocket.receive_text()
+        init_message = json.loads(init_data)
+        canvas_width = init_message.get("canvas_width", 1280)
+        canvas_height = init_message.get("canvas_height", 720)
 
-    ship_sprite = equipped_ship.sprite if equipped_ship else "spaceship_thrust.png"
+    else:
 
-    init_data = await websocket.receive_text()
-    init_message = json.loads(init_data)
-    canvas_width  = init_message.get("canvas_width",  1280)
-    canvas_height = init_message.get("canvas_height", 720)
+        user_id = user_data["user_id"]
+        db = next(get_session())
 
-    db_game_session = GameSession(game_mode="solo")
-    db.add(db_game_session)
-    db.commit()
-    db.refresh(db_game_session)
+        user_repo = UserRepository(db)
+        user = user_repo.get_by_id(user_id)
+        username = user.username if user else "Unknown"
 
-    gsp = GameSessionPlayer(
-        session_id=db_game_session.id,
-        player_id = profile.id,
-        is_host = True,
-        is_ready = True,
-    )
-    db.add(gsp)
-    db.commit()
+        profile = db.exec(
+            select(PlayerProfile).where(PlayerProfile.user_id == user_id)
+        ).first()
+        if not profile:
+            await websocket.send_json({"type": "error", "message": "Player profile not found"})
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+        
+        equipped_ship = None
+        for owned in profile.ships:
+            if owned.equipped:
+                equipped_ship = owned.cosmetic_ship
+                break
 
-    db_game_session_id = db_game_session.id  
-    profile_id = profile.id  
+        ship_sprite = equipped_ship.sprite if equipped_ship else "spaceship_thrust.png"
 
-    db.close()
+        init_data = await websocket.receive_text()
+        init_message = json.loads(init_data)
+        canvas_width  = init_message.get("canvas_width",  1280)
+        canvas_height = init_message.get("canvas_height", 720)
+
+        db_game_session = GameSession(game_mode="solo")
+        db.add(db_game_session)
+        db.commit()
+        db.refresh(db_game_session)
+
+        gsp = GameSessionPlayer(
+            session_id=db_game_session.id,
+            player_id = profile.id,
+            is_host = True,
+            is_ready = True,
+        )
+        db.add(gsp)
+        db.commit()
+
+        db_game_session_id = db_game_session.id  
+        profile_id = profile.id  
+
+        db.close()
 
     if session_id not in active_sessions:
         game_session = AsteroidGameSession(

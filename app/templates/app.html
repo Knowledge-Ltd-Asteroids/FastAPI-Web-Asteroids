@@ -2,10 +2,6 @@
 
 {% block title %}Home{% endblock %}
 
-{% block external_js %}
-<script src="{{ url_for('static', path='js/app.js')}}"></script>
-{% endblock %}
-
 {% block additional_styles %}
 <style>
     .dashboard-home {
@@ -204,15 +200,15 @@
             gap: 1rem;
             text-align: center;
         }
-        
+
         .ship-info {
             flex-direction: column;
         }
-        
+
         .play-actions {
             grid-template-columns: 1fr;
         }
-        
+
         .play-icon {
             font-size: 28px;
         }
@@ -230,32 +226,36 @@
             <div class="play-title">SOLO</div>
             <div class="play-description">Climb the Ranks</div>
         </a>
-        
+        {% if user %}
         <a href="/app/play/coop" class="play-card">
-            <div class="play-icon">👥</div>
-            <div class="play-title">CO-OP</div>
-            <div class="play-description">Team up with another pilot</div>
-        </a>
+            {% else %}
+            <a href="#" class="play-card" style="opacity:0.4; cursor:not-allowed;" title="Login required for Co-op"
+                onclick="event.preventDefault(); alert('Create an account to play Co-op!')">
+                {% endif %}
+                <div class="play-icon">👥</div>
+                <div class="play-title">CO-OP</div>
+                <div class="play-description">Team up with another pilot</div>
+            </a>
     </div>
-    
+
     <div class="ship-showcase">
         <div class="ship-info">
             <div class="ship-sprite-container">
                 {% if equipped_ship and equipped_ship.sprite %}
-                    <img src="{{ url_for('static', path='Asteroids Asset Pack/sprites/spaceship/' + equipped_ship.sprite) }}"
-                         alt="{{ equipped_ship.name }}"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'material-symbols-outlined\'>rocket_launch</span>'">
+                <img src="{{ url_for('static', path='Asteroids Asset Pack/sprites/spaceship/' + equipped_ship.sprite) }}"
+                    alt="{{ equipped_ship.name }}"
+                    onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'material-symbols-outlined\'>rocket_launch</span>'">
                 {% else %}
-                    <span class="material-symbols-outlined">rocket_launch</span>
+                <span class="material-symbols-outlined">rocket_launch</span>
                 {% endif %}
             </div>
             <div class="ship-details">
                 <span class="ship-label">EQUIPPED SHIP</span>
                 <span class="ship-name">
                     {% if equipped_ship %}
-                        {{ equipped_ship.name | upper }}
+                    {{ equipped_ship.name | upper }}
                     {% else %}
-                        NO SHIP EQUIPPED
+                    NO SHIP EQUIPPED
                     {% endif %}
                 </span>
                 <span class="ship-status">
@@ -263,7 +263,7 @@
                 </span>
             </div>
         </div>
-        
+
         <div class="ship-actions">
             <a href="/hangar" class="ship-action-btn">
                 <span class="material-symbols-outlined">swap_horiz</span>
@@ -275,29 +275,29 @@
             </a>
         </div>
     </div>
-    
+
     <div class="quick-stats">
         <div class="stat-item">
             <div class="stat-value">{{ user.profile.highest_solo_score if user.profile else '0' }}</div>
             <div class="stat-label">HIGH SCORE</div>
         </div>
-        
+
         <div class="stat-item">
             <div class="stat-value">{{ user.profile.solo_games_played if user.profile else '0' }}</div>
             <div class="stat-label">GAMES</div>
         </div>
-        
+
         <div class="stat-item">
             <div class="stat-value">{{ user.profile.asteroids_destroyed if user.profile else '0' }}</div>
             <div class="stat-label">ASTEROIDS DESTROYED</div>
         </div>
-        
+
         <div class="stat-item">
             <div class="stat-value">{{ user.profile.currency if user.profile else '0' }}</div>
             <div class="stat-label">CREDITS</div>
         </div>
     </div>
-    
+
 </div>
 
 {% endblock %}
