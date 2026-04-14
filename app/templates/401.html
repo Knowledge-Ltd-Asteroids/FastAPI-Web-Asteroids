@@ -5,39 +5,37 @@
 {% block internal_css %}
 <style>
     body {
-        background-color: #f8f9fa;
+        margin: 0;
     }
 
-    .page-container {
+    .page-wrapper {
         min-height: 100vh;
     }
 
-    .card-custom {
-        border: none;
-        border-radius: 1rem;
-        overflow: hidden;
+    .card {
+        background: rgba(28, 30, 38, 0.85) !important;
     }
 
-    .left-section {
-        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        padding: 3rem;
+    .return-btn {
+        width: 100%;
+        background: transparent;
+        border: 2px dashed var(--slate);
+        color: var(--slate);
+        font-family: var(--font-pixel);
+        font-size: 0.875rem;
+        padding: 0.75rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: block;
+        text-align: center;
     }
 
-    .left-section img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .right-section {
-        padding: 3rem;
-    }
-
-    .btn-primary {
-        border-radius: 0.5rem;
+    .return-btn:hover {
+        border-color: var(--light);
+        color: var(--light);
+        border-style: solid;
     }
 </style>
 {% endblock %}
@@ -45,33 +43,22 @@
 
 {% block content %}
 
-<div class="container page-container d-flex align-items-center justify-content-center">
-    <div class="card shadow-lg card-custom col-lg-10">
-        <div class="row g-0">
+<div class="page-wrapper d-flex align-items-center justify-content-center">
+    <div class="col-11 col-sm-8 col-md-6 col-lg-4">
+        <div class="card border-2 p-4" style="border-color: var(--gold);">
 
-            <div class="col-lg-6 d-none d-lg-flex left-section">
-                <div class="text-center">
-                    <h2 class="mt-4 fw-bold">Session Expired</h2>
-                    <p class="lead">For security reasons, please sign in again.</p>
-                </div>
-            </div>
+            <h1 class="text-center mb-1" style="color: var(--gold); font-family: var(--font-pixel); font-size: 3rem;">401</h1>
+            <h2 class="text-center mb-3" style="color: var(--light); font-family: var(--font-pixel); font-size: 0.85rem;">SESSION EXPIRED</h2>
 
-            <div class="col-lg-6 bg-white">
-                <div class="right-section d-flex flex-column justify-content-center h-100">
-                    <h1 class="display-5 fw-bold text-danger mb-3">401</h1>
-                    <h3 class="fw-semibold mb-3">Unauthorized</h3>
-                    <p class="text-muted mb-4">
-                        Your session has expired or you do not have permission to access this page.
-                        Please log in again to continue.
-                    </p>
+            <p class="text-center mb-4" style="color: var(--slate); font-size: 0.85rem; line-height: 1.8;">
+                Your session has expired or you do not have permission to access this page.
+                Please log in again to continue.
+            </p>
 
-                    <div class="d-grid">
-                        <a href="{{url_for('login_view')}}" class="btn btn-primary btn-lg">
-                            Return to Login
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <a href="{{ url_for('login_view') }}" class="return-btn">
+                <span class="material-symbols-outlined align-middle" style="font-size: 16px;">login</span>
+                RETURN TO LOGIN
+            </a>
 
         </div>
     </div>
