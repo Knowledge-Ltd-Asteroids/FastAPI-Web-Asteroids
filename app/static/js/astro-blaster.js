@@ -1,27 +1,20 @@
 const canvas = document.getElementById("canvas");
 const c = canvas.getContext("2d");
 
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Windows Phone|Kindle|Silk/i.test(navigator.userAgent);
 
 if (isMobile) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
     const joystick = document.getElementById('joystick-container');
     const shootBtn = document.getElementById('mobile-shoot');
     if (joystick) joystick.style.display = 'block';
     if (shootBtn) shootBtn.style.display = 'block';
 
     setupMobileControls();
-   
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
-} else {
-    canvas.width = 1280;
-    canvas.height = 720;
 }
+
 
 const asteroidSprites = {
     big2: new Image(),
