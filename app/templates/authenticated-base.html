@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% block external_fonts %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sixtyfour&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block internal_css %}
 <style>
     body {
@@ -38,10 +44,9 @@
     }
 
     .game-logo {
-        font-family: var(--font-pixel);
+        font-family: 'Sixtyfour', var(--font-pixel);
         color: var(--gold);
         font-size: 1.5rem;
-        text-transform: uppercase;
         letter-spacing: 2px;
         text-decoration: none;
     }
