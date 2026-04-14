@@ -248,16 +248,16 @@
 
     .coop-container,
     .coop-select-container {
-        height: auto !important;
-        min-height: auto !important;
-        max-height: none !important;
-        overflow: visible !important;
+        height: auto;
+        min-height: auto;
+        max-height: none;
+        overflow: visible;
     }
 
 
     html, body {
-        height: auto !important;
-        overflow-y: auto !important;
+        height: auto;
+        overflow-y: auto;
     }
 </style>
 {% endblock %}
@@ -265,7 +265,9 @@
 {% block content %}
 <div class="coop-container">
     <div class="coop-card">
-        <div class="coop-icon">👥</div>
+        <div class="coop-icon">
+            <span class="material-symbols-outlined">group </span>
+        </div>
         <div class="coop-title">CO-OP LOBBY</div>
         
         <div class="coop-status">
@@ -299,7 +301,7 @@ function copyInviteCode(e) {
     navigator.clipboard.writeText(code).then(() => {
         const btn = e.target;
         const originalText = btn.textContent;
-        btn.textContent = '✓ COPIED';
+        btn.textContent = 'COPIED';
         btn.classList.add('copied');
         
         setTimeout(() => {
@@ -333,7 +335,7 @@ function checkLobbyStatus() {
     })
     .then(data => {
         console.log('Lobby data:', data);
-        // Check if another player has joined
+
         if (data.invited_user && (data.status === 'ready' || data.status === 'playing')) {
             console.log('Player joined! Redirecting to game...');
             hasRedirected = true;
@@ -342,7 +344,6 @@ function checkLobbyStatus() {
                 clearInterval(autoRefreshInterval);
             }
             
-            // Auto-redirect to game
             window.location.href = `/app/play/multiplayer/${inviteCode}`;
         } else {
             console.log('Still waiting... invited_user:', data.invited_user, 'status:', data.status);
@@ -353,11 +354,9 @@ function checkLobbyStatus() {
     });
 }
 
-// Auto-check every 1 second to detect when other player joins
 console.log('Coop lobby script loaded - starting auto-check...');
 autoRefreshInterval = setInterval(checkLobbyStatus, 1000);
 
-// Immediate check when page loads
 checkLobbyStatus();
 </script>
 {% endblock %}

@@ -189,7 +189,6 @@
         <span class="admin-stats-label">total registered users</span>
     </div>
 
-    <!-- Search Query-->
     <form method="GET" action="/admin" class="admin-search-form">
         <input type="text" name="q" value="{{ q }}" placeholder="Search username or email..." class="admin-search-input">
         <select name="sort" class="admin-search-select">
@@ -235,7 +234,6 @@
         </table>
     </div>
 
-    <!-- pagination -->
     {% if pagination.total_pages > 1 %}
     <div class="admin-pagination">
         {% if pagination.has_prev %}

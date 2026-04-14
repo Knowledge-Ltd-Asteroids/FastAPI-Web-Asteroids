@@ -224,16 +224,16 @@
 
     .coop-container,
     .coop-select-container {
-        height: auto !important;
-        min-height: auto !important;
-        max-height: none !important;
-        overflow: visible !important;
+        height: auto;
+        min-height: auto;
+        max-height: none;
+        overflow: visible;
     }
 
 
     html, body {
-        height: auto !important;
-        overflow-y: auto !important;
+        height: auto;
+        overflow-y: auto;
     }
 </style>
 {% endblock %}
@@ -247,7 +247,9 @@
         <div class="option-grid">
             <form action="/app/play/coop/create" method="POST" style="display: contents;">
                 <button type="submit" class="option-card" style="cursor: pointer; background: inherit; border: inherit; padding: inherit;">
-                    <div class="option-icon">🎁</div>
+                    <div class="option-icon">
+                        <span class="material-symbols-outlined">featured_seasonal_and_gifts</span>
+                    </div>
                     <div class="option-title">Create Room</div>
                     <div class="option-description">Start a new room and share the code with a friend</div>
                 </button>

@@ -233,7 +233,9 @@
 
     <div class="play-actions">
         <a href="/app/play/solo" class="play-card">
-            <div class="play-icon">🚀</div>
+            <div class="play-icon">
+                <span class="material-symbols-outlined">rocket_launch</span>
+            </div>
             <div class="play-title">SOLO</div>
             <div class="play-description">Climb the Ranks</div>
         </a>
@@ -243,7 +245,9 @@
             <a href="#" class="play-card" style="opacity:0.4; cursor:not-allowed;" title="Login required for Co-op"
                 onclick="event.preventDefault(); alert('Create an account to play Co-op!')">
                 {% endif %}
-                <div class="play-icon">👥</div>
+                <div class="play-icon">
+                    <span class="material-symbols-outlined">group</span>
+                </div>
                 <div class="play-title">CO-OP</div>
                 <div class="play-description">Team up with another pilot</div>
             </a>

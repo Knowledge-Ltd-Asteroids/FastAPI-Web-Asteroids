@@ -9,7 +9,7 @@
 {% block internal_css %}
 <style>
     body {
-        background-color: var(--dark) !important;
+        background-color: var(--dark);
         margin: 0;
         min-height: 100vh;
         overflow-y: auto;
@@ -80,7 +80,7 @@
     }
 
     .username-display {
-        text-transform: none !important;
+        text-transform: none;
     }
 
     .nav-link:hover {
@@ -356,7 +356,7 @@
 
         <div class="nav-right">
             {% if user %}
-            <!-- Logged in -->
+
             <div class="credit-display">
                 <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
                 <span>{{ user.profile.currency if user.profile else '0' }}</span>
@@ -372,7 +372,7 @@
                 </a>
             </div>
             {% else %}
-            <!-- Guest -->
+
             <div class="user-menu">
                 <span class="nav-link" style="cursor:default;">
                     <span class="material-symbols-outlined">person</span>
