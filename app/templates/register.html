@@ -5,7 +5,8 @@
 <style>
     body {
         margin: 0;
-        overflow: hidden;
+        overflow-y: auto;           /* ✅ Allow vertical scrolling */
+        overflow-x: hidden; 
         background-color: var(--dark);
     }
 
@@ -23,6 +24,7 @@
         min-height: 100vh;
         position: relative;
         z-index: 10;
+        padding: 1rem;
     }
     
     .card {

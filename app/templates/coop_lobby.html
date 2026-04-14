@@ -5,9 +5,9 @@
 <style>
     .coop-container {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: calc(100vh - 100px);
+        justify-content: flex-start; 
+        align-items: flex-start;     
+        min-height: auto;           
         padding: 2rem;
     }
 
@@ -15,6 +15,7 @@
         background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 69, 0, 0.1));
         border: 3px solid var(--gold);
         border-radius: 1rem;
+        margin: 0 auto; 
         padding: 3rem;
         max-width: 500px;
         text-align: center;
@@ -208,6 +209,55 @@
 
     .instructions-text li {
         margin: 0.25rem 0;
+    }
+
+    @media (max-width: 600px) {
+        .coop-container {
+            padding: 1rem;
+        }
+        
+        .coop-card {
+            padding: 1.5rem;
+        }
+        
+        .coop-title {
+            font-size: 1.5rem;
+        }
+        
+        .invite-code {
+            font-size: 1rem;
+            padding: 0.5rem;
+        }
+        
+        .invite-code-container {
+            flex-direction: column;
+        }
+        
+        .copy-btn {
+            width: 100%;
+        }
+        
+        .button-group {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .coop-container,
+    .coop-select-container {
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+
+    html, body {
+        height: auto !important;
+        overflow-y: auto !important;
     }
 </style>
 {% endblock %}
