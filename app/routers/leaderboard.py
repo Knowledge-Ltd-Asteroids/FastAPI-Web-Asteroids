@@ -24,7 +24,7 @@ async def leaderboard_view(
     if filter == "solo_scores":
         rankings = db.exec(select(PlayerProfile).where(PlayerProfile.active==True)
                            .order_by(PlayerProfile.highest_solo_score.desc()).limit(100)).all()
-        lb_title = " Top 100 High Solo Scores"
+        lb_title = "HIGHEST SOLO SCORES"
     elif filter == "coop_scores":
         rankings = db.exec(select(PlayerProfile).where(PlayerProfile.active==True)
                            .order_by(PlayerProfile.highest_coop_score.desc()).limit(100)).all()
