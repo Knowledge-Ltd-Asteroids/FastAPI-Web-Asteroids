@@ -175,6 +175,7 @@
             opacity: 0;
             transform: translateX(20px);
         }
+
         to {
             opacity: 1;
             transform: translateX(0);
@@ -207,7 +208,8 @@
         color: var(--success);
     }
 
-    .flash-message.danger, .flash-message.error {
+    .flash-message.danger,
+    .flash-message.error {
         background: var(--dark);
         border-left-color: var(--coral);
         color: var(--coral);
@@ -234,20 +236,20 @@
             align-items: stretch;
         }
     }
-    
+
     @media (max-width: 900px) {
         .game-nav {
             padding: 0.75rem 1rem;
         }
-        
+
         .nav-left {
             gap: 1rem;
         }
-        
+
         .nav-links {
             gap: 1rem;
         }
-        
+
         .nav-link {
             font-size: 0.65rem;
         }
@@ -259,26 +261,26 @@
             align-items: stretch;
             padding: 0.75rem;
         }
-        
+
         .nav-left {
             justify-content: space-between;
         }
-        
+
         .nav-links {
             justify-content: space-around;
             width: 100%;
             gap: 0.5rem;
         }
-        
+
         .nav-right {
             justify-content: space-between;
             width: 100%;
         }
-        
+
         .nav-link .nav-label {
             display: none;
         }
-        
+
         .nav-link .material-symbols-outlined {
             font-size: 24px;
         }
@@ -288,19 +290,19 @@
         .game-logo {
             font-size: 1.25rem;
         }
-        
+
         .nav-link .material-symbols-outlined {
             font-size: 22px;
         }
-        
+
         .credit-display {
             font-size: 0.75rem;
         }
-        
+
         .user-greeting {
             font-size: 0.75rem;
         }
-        
+
         .logout-btn span:not(.material-symbols-outlined) {
             display: none;
         }
@@ -311,54 +313,76 @@
 
 {% block content %}
 <div class="app-wrapper">
-    
-    <!-- Top Nav Bar -->
+
     <nav class="game-nav">
         <div class="nav-left">
             <a href="/app" class="game-logo">ASTEROIDS</a>
-            
+
             <div class="nav-links">
                 <a href="/app" class="nav-link {{ 'active' if request.path == '/app' }}">
                     <span class="material-symbols-outlined">home</span>
                     <span class="nav-label">HOME</span>
                 </a>
-                
+
                 <a href="/store" class="nav-link {{ 'active' if request.path == '/store' }}">
                     <span class="material-symbols-outlined">shopping_cart</span>
                     <span class="nav-label">STORE</span>
                 </a>
-                
+
+                {% if user %}
                 <a href="/hangar" class="nav-link {{ 'active' if request.path == '/hangar' }}">
                     <span class="material-symbols-outlined">rocket_launch</span>
                     <span class="nav-label">HANGAR</span>
                 </a>
-                
+                {% endif %}
+
                 <a href="/leaderboard" class="nav-link {{ 'active' if request.path == '/leaderboard' }}">
                     <span class="material-symbols-outlined">leaderboard</span>
                     <span class="nav-label">Leaderboard</span>
                 </a>
 
-                {% if user and user.role == "admin" %}
-                <a href="/admin" class="nav-link {{ 'active' if request.path == '/admin' }}">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
-                    <span class="nav-label">ADMIN</span>
-                </a>
+                {% if user %}
+                <div class="credit-display">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
+                    <span>{{ user.profile.currency if user.profile else '0' }}</span>
+                </div>
+                <div class="user-menu">
+                    <a href="/profile" class="nav-link">
+                        <span class="material-symbols-outlined">account_circle</span>
+                        <span class="nav-label username-display">{{ user.username }}</span>
+                    </a>
+                    <a href="/logout" class="logout-btn">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
+                        <span>LOGOUT</span>
+                    </a>
+                </div>
+                {% else %}
+                <div class="user-menu">
+                    <span class="nav-link" style="cursor:default;">
+                        <span class="material-symbols-outlined">person</span>
+                        <span class="nav-label username-display">GUEST</span>
+                    </span>
+                    <a href="/login" class="logout-btn">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">login</span>
+                        <span>LOGIN</span>
+                    </a>
+                </div>
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="nav-right">
             <div class="credit-display">
                 <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
                 <span>{{ user.profile.currency if user.profile else '1,500' }}</span>
             </div>
-            
+
             <div class="user-menu">
                 <a href="/profile" class="nav-link {{ 'active' if request.path == '/profile' }}">
                     <span class="material-symbols-outlined">account_circle</span>
                     <span class="nav-label username-display">{{ user.username if user else 'PLAYER' }}</span>
                 </a>
-                
+
                 <a href="/logout" class="logout-btn">
                     <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
                     <span>LOGOUT</span>
@@ -366,34 +390,34 @@
             </div>
         </div>
     </nav>
-    
+
     <div class="flash-container">
         {% for message in get_flashed_messages(request) %}
-            <div class="flash-message {{ message.type }}" id="flash-{{ loop.index }}">
-                <div class="flash-content">
-                    {% if message.type == "success" %}
-                        <span class="material-symbols-outlined">check_circle</span>
-                    {% elif message.type in ["danger", "error"] %}
-                        <span class="material-symbols-outlined">error</span>
-                    {% elif message.type == "warning" %}
-                        <span class="material-symbols-outlined">warning</span>
-                    {% else %}
-                        <span class="material-symbols-outlined">info</span>
-                    {% endif %}
-                    <span>{{ message.message }}</span>
-                </div>
-                <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
+        <div class="flash-message {{ message.type }}" id="flash-{{ loop.index }}">
+            <div class="flash-content">
+                {% if message.type == "success" %}
+                <span class="material-symbols-outlined">check_circle</span>
+                {% elif message.type in ["danger", "error"] %}
+                <span class="material-symbols-outlined">error</span>
+                {% elif message.type == "warning" %}
+                <span class="material-symbols-outlined">warning</span>
+                {% else %}
+                <span class="material-symbols-outlined">info</span>
+                {% endif %}
+                <span>{{ message.message }}</span>
             </div>
+            <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
         {% endfor %}
     </div>
-    
+
     <div class="main-content">
         {% block subpage_content %}
         {% endblock %}
     </div>
-    
+
 </div>
 {% endblock %}
 
@@ -410,8 +434,8 @@
             }, 200);
         }
     }
-    
-    document.addEventListener('DOMContentLoaded', function() {
+
+    document.addEventListener('DOMContentLoaded', function () {
         const flashes = document.querySelectorAll('.flash-message');
         flashes.forEach((flash, index) => {
             setTimeout(() => {
@@ -423,4 +447,3 @@
     });
 </script>
 {% endblock %}
-
