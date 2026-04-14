@@ -34,6 +34,7 @@ class AsteroidGameSession:
 
         self.broadcast_callback: Optional[Callable] = None
         self.task: Optional[asyncio.Task] = None
+        self._session_saved = False
 
 
     def add_player(self, player_id: str, initial_position: Dict = None) -> None:
@@ -267,6 +268,10 @@ class AsteroidGameSession:
 
     async def save_session_to_db(self, db_session_id: int) -> None:
 
+        if self._session_saved: 
+            return               
+        self._session_saved = True
+
         db = next(get_session())
 
         try:
@@ -279,6 +284,10 @@ class AsteroidGameSession:
 
             total_score = 0
             total_asteroids = 0
+
+            for player_data in self.players.values():
+                total_score += player_data["score"]
+                total_asteroids += player_data["asteroids_destroyed"]
 
             for ws_player_id, player_data in self.players.items():
                 db_player_id = self._player_db_ids.get(ws_player_id)
@@ -313,13 +322,10 @@ class AsteroidGameSession:
                             profile.highest_solo_score = player_data["score"]
                     else:
                         profile.coop_games_played += 1
-                        if player_data["score"] > profile.highest_coop_score:
-                            profile.highest_coop_score = player_data["score"]
+                        if total_score > profile.highest_coop_score:
+                            profile.highest_coop_score = total_score
 
                     db.add(profile)
-
-                total_score += player_data["score"]
-                total_asteroids += player_data["asteroids_destroyed"]
 
             game_session.total_score = total_score
             game_session.total_asteroids_destroyed = total_asteroids
