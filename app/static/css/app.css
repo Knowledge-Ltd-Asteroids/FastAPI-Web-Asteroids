@@ -128,10 +128,9 @@ a:hover {
     color: var(--slate) !important;
 }
 
-/* Material Symbols */
 .material-symbols-outlined {
-    color: var(--gold) !important;
-    font-size: 16px !important;
+    color: var(--gold) ;
+    font-size: 16px ;
 }
 
 .btn-close {
