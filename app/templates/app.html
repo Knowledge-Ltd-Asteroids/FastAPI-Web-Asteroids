@@ -322,7 +322,6 @@
 
 {% block external_js %}
 <script>
-    // Block co-op on mobile
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Windows Phone|Kindle|Silk/i.test(navigator.userAgent)) {
         const coopBtn = document.querySelector('a[href="/app/play/coop"]');
         if (coopBtn) {

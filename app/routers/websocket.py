@@ -194,7 +194,7 @@ async def websocket_solo_endpoint(websocket: WebSocket, session_id: str):
         try:
             await game_session.save_session_to_db(db_game_session_id)
         except Exception as e:
-            print(f"[SOLO] Failed to save session: {e}")
+            pass
 
         active_connections[session_id].remove(websocket)
         game_session.remove_player(player_id)
@@ -363,9 +363,8 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
                 "username": username,
                 "other_players": other_players_info,
             })
-            print(f"[WS] Notified other players about {player_id}")
         except Exception as e:
-            print(f"[WS] Failed to notify other players: {e}")
+            pass
 
     try:
         while True:
@@ -397,7 +396,7 @@ async def websocket_multiplayer_endpoint(websocket: WebSocket, invite_code: str)
         try:
             await game_session.save_session_to_db(db_session_id)
         except Exception as e:
-            print(f"[MP] Failed to save session: {e}")
+            pass
 
         game_session.remove_player(player_id)
 

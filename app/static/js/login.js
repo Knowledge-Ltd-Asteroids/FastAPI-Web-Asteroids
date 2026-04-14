@@ -10,7 +10,6 @@
         small2: new Image()
     };
     
-    // Load all sprites
     asteroidSprites.big2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_big2.png';
     asteroidSprites.medium1.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_medium1.png';
     asteroidSprites.medium2.src = '/static/Asteroids Asset Pack/sprites/asteroids/asteroid_medium2.png';
@@ -35,7 +34,6 @@
     asteroidSprites.small1.onload = spriteLoaded;
     asteroidSprites.small2.onload = spriteLoaded;
     
-    // Fallback if sprites fail to load
     asteroidSprites.big2.onerror = () => { spritesLoaded = true; };
     
     function resizeCanvas() {
@@ -109,10 +107,8 @@
             const size = this.spriteType.size;
             
             if (spritesLoaded && sprite && sprite.complete) {
-                // Draw sprite
                 c.drawImage(sprite, -size/2, -size/2, size, size);
                 
-                // Highlight effect when touched
                 if (this.highlight > 0) {
                     c.globalAlpha = 0.4;
                     c.drawImage(sprite, -size/2, -size/2, size, size);
@@ -120,7 +116,6 @@
                     this.highlight--;
                 }
             } else {
-                // Fallback: draw wireframe circle
                 c.beginPath();
                 c.arc(0, 0, this.radius, 0, Math.PI * 2);
                 c.strokeStyle = this.highlight > 0 ? '#E1B100' : 'white';
@@ -137,7 +132,6 @@
             this.position.x += this.velocity.x;
             this.position.y += this.velocity.y;
             
-            // Login box collision
             if (loginBox.active) {
                 const asteroidLeft = this.position.x - this.radius;
                 const asteroidRight = this.position.x + this.radius;
@@ -183,7 +177,6 @@
                 }
             }
             
-            // Mouse repulsion
             if (mousePresent) {
                 const dx = this.position.x - mouseX;
                 const dy = this.position.y - mouseY;
@@ -225,7 +218,6 @@
         c.fillStyle = 'black';
         c.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Draw stars
         c.fillStyle = 'white';
         for (let star of stars) {
             c.beginPath();
@@ -235,7 +227,6 @@
         
         updateLoginBoxBounds();
         
-        // Update and draw asteroids
         for (let i = asteroids.length - 1; i >= 0; i--) {
             const asteroid = asteroids[i];
             asteroid.update();
@@ -250,7 +241,6 @@
             }
         }
         
-        // Shield glow from collisisons with login box
         if (boxGlow > 0 && loginBox.active) {
             c.strokeStyle = `rgba(225, 177, 0, ${boxGlow * 0.4})`;
             c.lineWidth = 4;

@@ -90,7 +90,6 @@ class AsteroidGameSession:
     def update_difficulty(self, difficulty: float, spawn_interval: float) -> None:
         self.difficulty = difficulty
         self.ASTEROID_SPAWN_INTERVAL = spawn_interval
-        print(f"Difficulty updated: {difficulty} | Spawn Interval: {spawn_interval}ms")
 
     def spawn_asteroids(self, current_time_ms: float) -> None:
         if current_time_ms - self.last_spawn_time < self.ASTEROID_SPAWN_INTERVAL:

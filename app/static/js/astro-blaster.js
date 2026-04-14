@@ -60,7 +60,6 @@ let isGameOver = false;
 let asteroidsDestroyedCount = 0;
 let gameStartTime = Date.now();
 
-//team stats
 let teamScore = 0;
 let teamAsteroidsDestroyed = 0;
 let gameOverMode = null;
@@ -83,7 +82,6 @@ draw() {
     c.translate(this.position.x, this.position.y);
     c.rotate(this.rotation + Math.PI / 2);
 
-    // Maintain aspect ratio
     const maxSize = 40;
     let drawWidth = maxSize;
     let drawHeight = maxSize;
@@ -162,7 +160,6 @@ class OpponentShip {
         c.translate(this.position.x, this.position.y);
         c.rotate(this.rotation + Math.PI / 2);
 
-        // Maintain aspect ratio
         const maxSize = 40;
         let drawWidth = maxSize;
         let drawHeight = maxSize;
@@ -774,14 +771,12 @@ function endGame() {
     gameOverMode = gameMode;
     
     if (gameMode === "solo") {
-        // Solo game over
         document.getElementById("canvas").style.display = "none";
         document.getElementById("game-over-screen").style.display = "flex";
         document.getElementById("final-score").textContent = gameState.playerScore;
         document.getElementById("asteroids-destroyed").textContent = asteroidsDestroyedCount;
         document.getElementById("time-survived").textContent = formatTime(timeSurvived);
     } else {
-        // Multiplayer game over
         document.getElementById("canvas").style.display = "none";
         document.getElementById("multiplayer-game-over-screen").style.display = "flex";
         document.getElementById("team-final-score").textContent = teamScore;

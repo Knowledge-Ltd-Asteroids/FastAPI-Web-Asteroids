@@ -41,7 +41,6 @@ async def get_current_user(request:Request, db:SessionDep)->User:
         payload = jwt.decode(token, get_settings().secret_key, algorithms=[get_settings().jwt_algorithm])
         user_id = payload.get("sub",None)
     except InvalidTokenError as e:
-        print("Invalid token error: ", e)
         raise credentials_exception
 
     repo = UserRepository(db)
