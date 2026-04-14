@@ -312,3 +312,20 @@
 </div>
 {% endblock %}
 
+{% block external_js %}
+<script>
+    // Block co-op on mobile
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Windows Phone|Kindle|Silk/i.test(navigator.userAgent)) {
+        const coopBtn = document.querySelector('a[href="/app/play/coop"]');
+        if (coopBtn) {
+            coopBtn.href = '#';
+            coopBtn.style.opacity = '0.4';
+            coopBtn.style.cursor = 'not-allowed';
+            coopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('Multiplayer is not supported on mobile devices.\n\nPlease use a desktop or laptop to play co-op.');
+            });
+        }
+    }
+</script>
+{% endblock %}

@@ -93,6 +93,26 @@
         cursor: pointer;
         font-family: var(--font-pixel);
         font-size: 0.75rem;
+        transition: all 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .buy-btn:hover {
+        background: var(--gold);
+        color: var(--dark);
+    }
+
+    .buy-btn:active {
+        transform: scale(0.98);
+    }
+
+    @media (max-width: 600px) {
+        .buy-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
     }
     
     .empty-store {
@@ -104,7 +124,6 @@
         text-decoration: none;
     }
     
-    /* Modal Styles */
     .modal-overlay {
         display: none;
         position: fixed;

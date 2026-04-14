@@ -85,6 +85,18 @@
         cursor: pointer;
         font-family: var(--font-pixel);
         font-size: 0.75rem;
+        transition: all 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    .equip-btn:hover {
+        background: var(--gold);
+        color: var(--dark);
+    }
+    
+    .equip-btn:active {
+        transform: scale(0.98);
     }
     
     .empty-hangar {
@@ -94,6 +106,41 @@
     .store-link {
         color: var(--gold);
         text-decoration: none;
+    }
+    
+    @media (max-width: 600px) {
+        .ship-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .ship-sprite-container {
+            align-self: center;
+        }
+        
+        .ship-info {
+            text-align: center;
+            width: 100%;
+        }
+        
+        .ship-action {
+            text-align: center;
+            width: 100%;
+        }
+        
+        .equip-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .equipped-badge {
+            display: block;
+            text-align: center;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
     }
 </style>
 {% endblock %}
