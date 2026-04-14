@@ -1,8 +1,27 @@
 const canvas = document.getElementById("canvas");
 const c = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Windows Phone|Kindle|Silk/i.test(navigator.userAgent);
+
+if (isMobile) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const joystick = document.getElementById('joystick-container');
+    const shootBtn = document.getElementById('mobile-shoot');
+    if (joystick) joystick.style.display = 'block';
+    if (shootBtn) shootBtn.style.display = 'block';
+
+    setupMobileControls();
+   
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+} else {
+    canvas.width = 1280;
+    canvas.height = 720;
+}
 
 const asteroidSprites = {
     big2: new Image(),
@@ -779,6 +798,76 @@ function playAgain() {
 
 function exitToHome() {
     window.location.href = "/app";
+}
+
+function setupMobileControls() {
+    if (typeof nipplejs === 'undefined') {
+        console.log('NippleJS not loaded');
+        return;
+    }
+    
+    const container = document.getElementById('joystick-container');
+    const shootBtn = document.getElementById('mobile-shoot');
+    
+    if (!container || !shootBtn) return;
+    
+    const joystick = nipplejs.create({
+        zone: container,
+        mode: 'static',
+        position: { left: '50%', top: '50%' },
+        color: 'white',
+        size: 80,
+        lockY: false,
+        lockX: false
+    });
+    
+    joystick.on('move', (evt, data) => {
+        keys.w.pressed = data.force > 0.1;
+        
+        const angle = data.angle.radian;
+        
+        if (data.vector.x < -0.2) {
+            keys.a.pressed = true;
+            keys.d.pressed = false;
+        } else if (data.vector.x > 0.2) {
+            keys.d.pressed = true;
+            keys.a.pressed = false;
+        } else {
+            keys.a.pressed = false;
+            keys.d.pressed = false;
+        }
+    });
+    
+    joystick.on('end', () => {
+        keys.w.pressed = false;
+        keys.a.pressed = false;
+        keys.d.pressed = false;
+    });
+    
+    const preventTouch = (e) => e.preventDefault();
+    
+    shootBtn.addEventListener('touchstart', (e) => {
+        preventTouch(e);
+        keys.space.pressed = true;
+    });
+    
+    shootBtn.addEventListener('touchend', (e) => {
+        preventTouch(e);
+        keys.space.pressed = false;
+    });
+    
+    shootBtn.addEventListener('touchcancel', (e) => {
+        preventTouch(e);
+        keys.space.pressed = false;
+    });
+    
+    console.log('Mobile controls initialized');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMobileControls);
+} else {
+    setupMobileControls();
 }
 
 initializeWebSocket();

@@ -7,7 +7,26 @@
     .dashboard-home {
         max-width: 800px;
         margin: 0 auto;
-        padding: 2rem 1rem;  
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: calc(100vh - 200px);
+    }
+
+    @media (min-height: 1000px) {
+        .dashboard-home {
+            min-height: auto;
+            padding: 4rem 1rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .dashboard-home {
+            min-height: auto;
+            justify-content: flex-start;
+            padding: 1rem;
+        }
     }
 
     .play-actions {
@@ -275,7 +294,7 @@
         </div>
 
         <div class="stat-item">
-            <div class="stat-value">{{ user.profile.solo_games_played if user.profile else '0' }}</div>
+            <div class="stat-value">{{ user.profile.solo_games_played + user.profile.coop_games_played if user.profile else '0' }}</div>
             <div class="stat-label">GAMES</div>
         </div>
 

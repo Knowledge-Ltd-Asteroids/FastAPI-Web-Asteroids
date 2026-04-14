@@ -11,6 +11,43 @@
 
     #canvas {
         display: block;
+        width: 100vw;
+        height: 100vh;
+        touch-action: none;
+    }
+
+    #joystick-container {
+        display: none;
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        width: 120px;
+        height: 120px;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 50%;
+        }
+
+    .simple-shoot-btn {
+        display: none;
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 100, 100, 0.6);
+        color: #ff6666;
+        font-size: 40px;
+        z-index: 100;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .simple-shoot-btn:active {
+        background: rgba(255, 100, 100, 0.3);
     }
 
     #game-over-screen {
@@ -91,6 +128,10 @@
 {% block content %}
 <canvas id="canvas"></canvas>
 
+<!-- joystick for mobile -->
+<div id="joystick-container"></div>
+<button class="simple-shoot-btn" id="mobile-shoot">●</button>
+
 <!-- Game Over Screen -->
 <div id="game-over-screen">
     <h2 class="game-over-title">GAME OVER</h2>
@@ -116,5 +157,6 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
 <script src="{{ url_for('static', path='js/astro-blaster.js') }}"></script>
 {% endblock %}
