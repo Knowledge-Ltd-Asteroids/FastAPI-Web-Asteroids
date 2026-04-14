@@ -1,6 +1,6 @@
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import Request
-from app.dependencies.auth import AuthDep
+from app.dependencies.auth import AuthDep, GuestAuthDep
 from app.dependencies.session import SessionDep
 from app.models.lobby import Lobby
 from app.repositories.lobby import LobbyRepository
@@ -8,7 +8,7 @@ from app.repositories.user import UserRepository
 from . import router, templates
 
 @router.get("/app/play/solo", response_class=HTMLResponse)
-async def solo_game_view(request: Request):
+async def solo_game_view(request: Request, current_user: GuestAuthDep):
     return templates.TemplateResponse(
         request=request,
         name="game.html",

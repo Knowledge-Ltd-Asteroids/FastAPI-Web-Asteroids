@@ -6,6 +6,7 @@ from app.services.auth_service import AuthService
 from app.repositories.user import UserRepository
 from app.utilities.flash import flash
 from app.config import get_settings
+from app.dependencies.auth import create_guest_cookie
 
 # View route responsible for UI
 @router.get("/login", response_class=HTMLResponse)
@@ -38,4 +39,10 @@ async def login_action_ajax(
         samesite="none",
         secure=True,
     )
+    return response
+
+@router.get("/guest")
+async def guest_login(request: Request):
+    response = RedirectResponse(url="/app", status_code=status.HTTP_303_SEE_OTHER)
+    create_guest_cookie(response)
     return response
