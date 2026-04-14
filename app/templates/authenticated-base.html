@@ -1,435 +1,5 @@
 {% extends "base.html" %}
 
-{% block internal_css %}
-<style>
-    body {
-        background-color: var(--dark) !important;
-        margin: 0;
-        min-height: 100vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    .app-wrapper {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        z-index: 10;
-        overflow-x: hidden;
-    }
-
-    .game-nav {
-        background: rgba(28, 30, 38, 0.95);
-        border-bottom: 2px solid var(--gold);
-        padding: 0.75rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        backdrop-filter: blur(8px);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-
-    .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-    }
-
-    .game-logo {
-        font-family: var(--font-pixel);
-        color: var(--gold);
-        font-size: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        text-decoration: none;
-    }
-
-    .game-logo:hover {
-        color: var(--gold);
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 1.5rem;
-        align-items: center;
-    }
-
-    .nav-link {
-        font-family: var(--font-pixel);
-        color: var(--slate);
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        text-decoration: none;
-        padding: 0.5rem 0;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        white-space: nowrap;
-    }
-
-    .username-display {
-        text-transform: none !important;
-    }
-
-    .nav-link:hover {
-        color: var(--light);
-    }
-
-    .nav-link.active {
-        color: var(--gold);
-        border-bottom-color: var(--gold);
-    }
-
-    .nav-link .material-symbols-outlined {
-        font-size: 18px;
-    }
-
-    .nav-right {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-    }
-
-    .credit-display {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--gold);
-        font-family: var(--font-pixel);
-        font-size: 0.875rem;
-    }
-
-    .user-menu {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .user-greeting {
-        color: var(--light);
-        font-family: system-ui, sans-serif;
-        font-size: 0.875rem;
-    }
-
-    .user-greeting strong {
-        color: var(--gold);
-    }
-
-    .logout-btn {
-        color: var(--slate);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-family: system-ui, sans-serif;
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid var(--slate);
-        border-radius: 4px;
-        transition: all 0.2s;
-    }
-
-    .logout-btn:hover {
-        color: var(--coral);
-        border-color: var(--coral);
-    }
-
-    .main-content {
-        flex: 1;
-        padding: 1.5rem;
-        overflow-y: auto;
-        overflow-x: auto;
-        min-width: 0;
-    }
-
-    .flash-container {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.5rem;
-        max-width: 350px;
-        pointer-events: none;
-    }
-
-    .flash-message {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1rem;
-        border-radius: 6px;
-        font-family: system-ui, sans-serif;
-        font-size: 0.85rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        animation: slideIn 0.2s ease;
-        border-left: 3px solid;
-        pointer-events: auto;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .flash-close {
-        background: none;
-        border: none;
-        padding: 0;
-        margin-left: 0.5rem;
-        cursor: pointer;
-        opacity: 0.6;
-        transition: opacity 0.2s;
-        display: flex;
-        align-items: center;
-    }
-
-    .flash-close:hover {
-        opacity: 1;
-    }
-
-    .flash-close .material-symbols-outlined {
-        font-size: 16px;
-    }
-
-    .flash-message.success {
-        background: var(--dark);
-        border-left-color: var(--success);
-        color: var(--success);
-    }
-
-    .flash-message.danger, .flash-message.error {
-        background: var(--dark);
-        border-left-color: var(--coral);
-        color: var(--coral);
-    }
-
-    .flash-message.warning {
-        background: var(--dark);
-        border-left-color: var(--gold);
-        color: var(--gold);
-    }
-
-    .flash-message.info {
-        background: var(--dark);
-        border-left-color: var(--slate);
-        color: var(--slate);
-    }
-
-    @media (max-width: 480px) {
-        .flash-container {
-            top: 70px;
-            right: 10px;
-            left: 10px;
-            max-width: none;
-            align-items: stretch;
-        }
-    }
-    
-    @media (max-width: 900px) {
-        .game-nav {
-            padding: 0.75rem 1rem;
-        }
-        
-        .nav-left {
-            gap: 1rem;
-        }
-        
-        .nav-links {
-            gap: 1rem;
-        }
-        
-        .nav-link {
-            font-size: 0.65rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .game-nav {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 0.75rem;
-        }
-        
-        .nav-left {
-            justify-content: space-between;
-        }
-        
-        .nav-links {
-            justify-content: space-around;
-            width: 100%;
-            gap: 0.5rem;
-        }
-        
-        .nav-right {
-            justify-content: space-between;
-            width: 100%;
-        }
-        
-        .nav-link .nav-label {
-            display: none;
-        }
-        
-        .nav-link .material-symbols-outlined {
-            font-size: 24px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .game-logo {
-            font-size: 1.25rem;
-        }
-        
-        .nav-link .material-symbols-outlined {
-            font-size: 22px;
-        }
-        
-        .credit-display {
-            font-size: 0.75rem;
-        }
-        
-        .user-greeting {
-            font-size: 0.75rem;
-        }
-        
-        .logout-btn span:not(.material-symbols-outlined) {
-            display: none;
-        }
-    }
-</style>
-{% block additional_styles %}{% endblock %}
-{% endblock %}
-
-{% block content %}
-<div class="app-wrapper">
-    
-    <!-- Top Nav Bar -->
-    <nav class="game-nav">
-        <div class="nav-left">
-            <a href="/app" class="game-logo">ASTEROIDS</a>
-            
-            <div class="nav-links">
-                <a href="/app" class="nav-link {{ 'active' if request.path == '/app' }}">
-                    <span class="material-symbols-outlined">home</span>
-                    <span class="nav-label">HOME</span>
-                </a>
-                
-                <a href="/store" class="nav-link {{ 'active' if request.path == '/store' }}">
-                    <span class="material-symbols-outlined">shopping_cart</span>
-                    <span class="nav-label">STORE</span>
-                </a>
-                
-                <a href="/hangar" class="nav-link {{ 'active' if request.path == '/hangar' }}">
-                    <span class="material-symbols-outlined">rocket_launch</span>
-                    <span class="nav-label">HANGAR</span>
-                </a>
-                
-                <a href="/leaderboard" class="nav-link {{ 'active' if request.path == '/leaderboard' }}">
-                    <span class="material-symbols-outlined">leaderboard</span>
-                    <span class="nav-label">Leaderboard</span>
-                </a>
-
-                {% if user and user.role == "admin" %}
-                <a href="/admin" class="nav-link {{ 'active' if request.path == '/admin' }}">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
-                    <span class="nav-label">ADMIN</span>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="nav-right">
-            <div class="credit-display">
-                <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
-                <span>{{ user.profile.currency if user.profile else '1,500' }}</span>
-            </div>
-            
-            <div class="user-menu">
-                <a href="/profile" class="nav-link {{ 'active' if request.path == '/profile' }}">
-                    <span class="material-symbols-outlined">account_circle</span>
-                    <span class="nav-label username-display">{{ user.username if user else 'PLAYER' }}</span>
-                </a>
-                
-                <a href="/logout" class="logout-btn">
-                    <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
-                    <span>LOGOUT</span>
-                </a>
-            </div>
-        </div>
-    </nav>
-    
-    <div class="flash-container">
-        {% for message in get_flashed_messages(request) %}
-            <div class="flash-message {{ message.type }}" id="flash-{{ loop.index }}">
-                <div class="flash-content">
-                    {% if message.type == "success" %}
-                        <span class="material-symbols-outlined">check_circle</span>
-                    {% elif message.type in ["danger", "error"] %}
-                        <span class="material-symbols-outlined">error</span>
-                    {% elif message.type == "warning" %}
-                        <span class="material-symbols-outlined">warning</span>
-                    {% else %}
-                        <span class="material-symbols-outlined">info</span>
-                    {% endif %}
-                    <span>{{ message.message }}</span>
-                </div>
-                <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-        {% endfor %}
-    </div>
-    
-    <div class="main-content">
-        {% block subpage_content %}
-        {% endblock %}
-    </div>
-    
-</div>
-{% endblock %}
-
-{% block external_js %}
-
-<script>
-    function closeFlash(id) {
-        const flash = document.getElementById(id);
-        if (flash) {
-            flash.style.opacity = '0';
-            flash.style.transform = 'translateY(-20px)';
-            setTimeout(() => {
-                flash.remove();
-            }, 200);
-        }
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        const flashes = document.querySelectorAll('.flash-message');
-        flashes.forEach((flash, index) => {
-            setTimeout(() => {
-                if (flash.parentNode) {
-                    closeFlash(flash.id);
-                }
-            }, 5000 + (index * 500));
-        });
-    });
-</script>
-{% extends "base.html" %}
-
 {% block external_fonts %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -442,6 +12,8 @@
         background-color: var(--dark) !important;
         margin: 0;
         min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden; 
     }
 
     .app-wrapper {
@@ -450,6 +22,7 @@
         flex-direction: column;
         position: relative;
         z-index: 10;
+        overflow-x: hidden;
     }
 
     .game-nav {
@@ -576,6 +149,9 @@
     .main-content {
         flex: 1;
         padding: 1.5rem;
+        overflow-y: auto;   
+        overflow-x: auto;    
+        min-width: 0;  
     }
 
     .flash-container {
@@ -775,54 +351,39 @@
                     <span class="material-symbols-outlined">leaderboard</span>
                     <span class="nav-label">Leaderboard</span>
                 </a>
-
-                {% if user %}
-                <div class="credit-display">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
-                    <span>{{ user.profile.currency if user.profile else '0' }}</span>
-                </div>
-                <div class="user-menu">
-                    <a href="/profile" class="nav-link">
-                        <span class="material-symbols-outlined">account_circle</span>
-                        <span class="nav-label username-display">{{ user.username }}</span>
-                    </a>
-                    <a href="/logout" class="logout-btn">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
-                        <span>LOGOUT</span>
-                    </a>
-                </div>
-                {% else %}
-                <div class="user-menu">
-                    <span class="nav-link" style="cursor:default;">
-                        <span class="material-symbols-outlined">person</span>
-                        <span class="nav-label username-display">GUEST</span>
-                    </span>
-                    <a href="/login" class="logout-btn">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">login</span>
-                        <span>LOGIN</span>
-                    </a>
-                </div>
-                {% endif %}
             </div>
         </div>
 
         <div class="nav-right">
+            {% if user %}
+            <!-- Logged in -->
             <div class="credit-display">
                 <span class="material-symbols-outlined" style="font-size: 20px;">paid</span>
-                <span>{{ user.profile.currency if user.profile else '1,500' }}</span>
+                <span>{{ user.profile.currency if user.profile else '0' }}</span>
             </div>
-
             <div class="user-menu">
                 <a href="/profile" class="nav-link {{ 'active' if request.path == '/profile' }}">
                     <span class="material-symbols-outlined">account_circle</span>
-                    <span class="nav-label username-display">{{ user.username if user else 'PLAYER' }}</span>
+                    <span class="nav-label username-display">{{ user.username }}</span>
                 </a>
-
                 <a href="/logout" class="logout-btn">
                     <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
                     <span>LOGOUT</span>
                 </a>
             </div>
+            {% else %}
+            <!-- Guest -->
+            <div class="user-menu">
+                <span class="nav-link" style="cursor:default;">
+                    <span class="material-symbols-outlined">person</span>
+                    <span class="nav-label username-display">GUEST</span>
+                </span>
+                <a href="/login" class="logout-btn">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">login</span>
+                    <span>LOGIN</span>
+                </a>
+            </div>
+            {% endif %}
         </div>
     </nav>
 
