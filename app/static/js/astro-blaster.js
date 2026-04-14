@@ -437,9 +437,7 @@ function animate() {
         }
     }
     
-    if (gameStartTime % 20 === 0) {
-        console.log(`Projectiles in gameState: ${totalProjectilesCount}`);
-    }
+
 
     for (let i = gameState.asteroids.length - 1; i >= 0; i--) {
         const asteroidData = gameState.asteroids[i];
@@ -501,8 +499,6 @@ let spawnInterval = 3000;
 const difficultyInterval = window.setInterval(() => {
     difficulty += 0.4;
     spawnInterval = Math.max(800, spawnInterval - 130);
-
-    console.log(`Difficulty: ${difficulty} | Spawn Interval: ${spawnInterval}ms`);
 
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
@@ -583,13 +579,9 @@ function initializeWebSocket() {
         wsUrl = `${protocol}//${window.location.host}/ws/solo/${sessionId}`;
     }
 
-    console.log(`[${gameMode.toUpperCase()}] Connecting to: ${wsUrl}`);
-
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-        console.log(`[${gameMode.toUpperCase()}] WebSocket connected`);
-
         ws.send(JSON.stringify({
             canvas_width: canvas.width,
             canvas_height: canvas.height,
@@ -610,24 +602,18 @@ function initializeWebSocket() {
             
             if (message.ship_sprite) {
                 spaceship.setSprite(message.ship_sprite);
-                console.log("Equipped ship sprite: ", message.ship_sprite);
             }
-            console.log(`Player ID: ${playerId} (${playerName})`);
-            console.log(`Mode: ${message.mode || 'unknown'}`);
             if (message.mode === "multiplayer") {
                 gameMode = "multiplayer";
             }
         }
 
         if (message.type === "player_joined") {
-            console.log(`Player joined: ${message.username}`);
-
             if (message.player_id !== playerId) {
                 opponentName = message.username;
                 if (message.ship_sprite) {
                     opponentSprite = message.ship_sprite;
                 }
-                console.log(`Opponent: ${opponentName}`, message.ship_sprite ? `(${message.ship_sprite})` : '');
             }
 
             if (message.other_players) {
@@ -676,14 +662,12 @@ function initializeWebSocket() {
             if (data.collisions && data.collisions.length > 0) {
                 data.collisions.forEach((collision) => {
                     if (collision.type === "asteroid_destroyed") {
-                        console.log(`Asteroid destroyed! Score: +${collision.score_gained}`);
                         asteroidsDestroyedCount++;
 
                         if (gameMode === "multiplayer") {
                             teamAsteroidsDestroyed++;
                         }
                     } else if (collision.type === "ship_hit") {
-                        console.log("Ship hit! Lives decreased");
                     }
                 });
             }
@@ -692,12 +676,10 @@ function initializeWebSocket() {
                 const allPlayers = Object.values(gameState.players || {});
                 const anyPlayerDead = allPlayers.some(p => p.lives <= 0);
                 if (anyPlayerDead) {
-                    console.log(`[${gameMode.toUpperCase()}] A player reached 0 lives. Game Over!`);
                     endGame();
                 }
             } else {
                 if (selfData && selfData.lives <= 0) {
-                    console.log(`[${gameMode.toUpperCase()}] Game Over!`);
                     endGame();
                 }
             }
@@ -705,11 +687,9 @@ function initializeWebSocket() {
     };
 
     ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
     };
 
     ws.onclose = () => {
-        console.log("WebSocket disconnected");
         if (animationID) {
             cancelAnimationFrame(animationID);
         }
@@ -802,7 +782,6 @@ function exitToHome() {
 
 function setupMobileControls() {
     if (typeof nipplejs === 'undefined') {
-        console.log('NippleJS not loaded');
         return;
     }
     
@@ -860,8 +839,6 @@ function setupMobileControls() {
         preventTouch(e);
         keys.space.pressed = false;
     });
-    
-    console.log('Mobile controls initialized');
 }
 
 if (document.readyState === 'loading') {

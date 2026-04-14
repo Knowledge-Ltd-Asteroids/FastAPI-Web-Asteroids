@@ -309,7 +309,6 @@ function copyInviteCode(e) {
             btn.classList.remove('copied');
         }, 2000);
     }).catch(err => {
-        console.error('Failed to copy:', err);
         alert('Failed to copy code');
     });
 }
@@ -328,16 +327,12 @@ function checkLobbyStatus() {
     })
     .then(response => {
         if (!response.ok) {
-            console.error('API Error:', response.status);
             throw new Error(`Failed to fetch lobby: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('Lobby data:', data);
-
         if (data.invited_user && (data.status === 'ready' || data.status === 'playing')) {
-            console.log('Player joined! Redirecting to game...');
             hasRedirected = true;
             
             if (autoRefreshInterval) {
@@ -345,16 +340,12 @@ function checkLobbyStatus() {
             }
             
             window.location.href = `/app/play/multiplayer/${inviteCode}`;
-        } else {
-            console.log('Still waiting... invited_user:', data.invited_user, 'status:', data.status);
         }
     })
     .catch(error => {
-        console.error('Lobby check error:', error);
     });
 }
 
-console.log('Coop lobby script loaded - starting auto-check...');
 autoRefreshInterval = setInterval(checkLobbyStatus, 1000);
 
 checkLobbyStatus();
