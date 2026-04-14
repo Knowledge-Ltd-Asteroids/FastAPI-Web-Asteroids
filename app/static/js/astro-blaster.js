@@ -326,6 +326,13 @@ const keys = {
     space: { pressed: false },
 };
 
+const mobileInput = {
+    active: false,
+    x: 0,
+    y: 0
+};
+
+
 const projectiles = [];
 let animationID = null;
 let lastFireTime = 0;
@@ -483,6 +490,17 @@ function animate() {
         spaceship.rotation -= Rotate_Speed;
     } else if (keys.d.pressed) {
         spaceship.rotation += Rotate_Speed;
+    }
+
+    if (mobileInput.active) {
+        const force = Math.min(1, Math.sqrt(mobileInput.x ** 2 + mobileInput.y ** 2));
+
+        spaceship.velocity.x = mobileInput.x * Spaceship_Speed * 0.6;
+        spaceship.velocity.y = mobileInput.y * Spaceship_Speed * 0.6;
+
+        if (force > 0.1) {
+            spaceship.rotation = Math.atan2(mobileInput.y, mobileInput.x);
+        }
     }
 
     if (keys.space.pressed) {
@@ -801,26 +819,16 @@ function setupMobileControls() {
     });
     
     joystick.on('move', (evt, data) => {
-        keys.w.pressed = data.force > 0.1;
-        
-        const angle = data.angle.radian;
-        
-        if (data.vector.x < -0.2) {
-            keys.a.pressed = true;
-            keys.d.pressed = false;
-        } else if (data.vector.x > 0.2) {
-            keys.d.pressed = true;
-            keys.a.pressed = false;
-        } else {
-            keys.a.pressed = false;
-            keys.d.pressed = false;
-        }
+        mobileInput.active = true;
+
+        mobileInput.x = data.vector.x;
+        mobileInput.y = -data.vector.y;
     });
-    
+
     joystick.on('end', () => {
-        keys.w.pressed = false;
-        keys.a.pressed = false;
-        keys.d.pressed = false;
+        mobileInput.active = false;
+        mobileInput.x = 0;
+        mobileInput.y = 0;
     });
     
     const preventTouch = (e) => e.preventDefault();
