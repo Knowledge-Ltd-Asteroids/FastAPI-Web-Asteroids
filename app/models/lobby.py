@@ -11,10 +11,14 @@ class Lobby(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     
     creator_id: int = Field(foreign_key="user.id")
-    creator: "User" = Relationship(sa_relationship_kwargs={"foreign_keys": "Lobby.creator_id"})
+    creator: "User" = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "Lobby.creator_id", "cascade": "all, delete-orphan"}
+    )
     
     invited_user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-    invited_user: Optional["User"] = Relationship(sa_relationship_kwargs={"foreign_keys": "Lobby.invited_user_id"})
+    invited_user: Optional["User"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "Lobby.invited_user_id", "cascade": "all, delete-orphan"}
+    )
     
     invite_code: str = Field(unique=True, index=True)
     status: str = Field(default="waiting")
