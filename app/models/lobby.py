@@ -9,28 +9,28 @@ if TYPE_CHECKING:
 class Lobby(SQLModel, table=True):
     """Game lobby for multiplayer rooms"""
     id: Optional[int] = Field(default=None, primary_key=True)
-    
+
     creator_id: int = Field(foreign_key="user.id")
     creator: "User" = Relationship(
-        sa_relationship_kwargs={"foreign_keys": "Lobby.creator_id", "cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={"foreign_keys": "Lobby.creator_id"}
     )
-    
+
     invited_user_id: Optional[int] = Field(default=None, foreign_key="user.id")
     invited_user: Optional["User"] = Relationship(
-        sa_relationship_kwargs={"foreign_keys": "Lobby.invited_user_id", "cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={"foreign_keys": "Lobby.invited_user_id"}
     )
-    
+
     invite_code: str = Field(unique=True, index=True)
     status: str = Field(default="waiting")
-    
+
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
-    
+
     winner_id: Optional[int] = Field(default=None, foreign_key="user.id")
     creator_score: int = Field(default=0)
     invited_player_score: int = Field(default=0)
-    
+
     @staticmethod
     def generate_invite_code() -> str:
         return secrets.token_hex(4).upper()
