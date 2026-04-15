@@ -102,7 +102,7 @@ async def delete_profile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    #prevent deletion of the last admin account
+
     if user.role == "admin":
         admin_count = db.exec(
             select(func.count()).select_from(User).where(User.role == "admin")
@@ -111,27 +111,40 @@ async def delete_profile(
             raise HTTPException(status_code=403, detail="Cannot delete the last admin account")
     
     try:
+
+        lobbies_as_creator = db.exec(select(Lobby).where(Lobby.creator_id == user.id)).all()
+        for lobby in lobbies_as_creator:
+            db.delete(lobby)
+
+        lobbies_as_invited = db.exec(select(Lobby).where(Lobby.invited_user_id == user.id)).all()
+        for lobby in lobbies_as_invited:
+            lobby.invited_user_id = None
+
+        lobbies_as_winner = db.exec(select(Lobby).where(Lobby.winner_id == user.id)).all()
+        for lobby in lobbies_as_winner:
+            lobby.winner_id = None
+
+        db.flush()
+
         profile = db.exec(select(PlayerProfile).where(PlayerProfile.user_id == user.id)).first()
-        
-        #reset profile to null/default values
         if profile:
-            profile.active = False
-            profile.highest_solo_score = 0
-            profile.highest_coop_score = 0
-            profile.solo_games_played = 0
-            profile.coop_games_played = 0
-            profile.asteroids_destroyed = 0
-            profile.currency = 0
-            profile.total_seconds_played = 0
-            profile.last_played = None
-            
-            #delete all owned ships
+            game_sessions = db.exec(
+                select(GameSessionPlayer).where(GameSessionPlayer.player_id == profile.id)
+            ).all()
+            for gs in game_sessions:
+                db.delete(gs)
+
             for ship in profile.ships:
                 db.delete(ship)
-        
+
+            db.delete(profile)
+
+        db.flush()
+
         user_repo = UserRepository(db)
         user_repo.delete_user(user.id)
-        
+
+        db.commit()
         request.session.clear()
         return {"message": "Your account has been permanently deleted"}
         
